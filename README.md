@@ -6,6 +6,7 @@ Roadmap de paridade com o app mobile e etapas seguras de implementacao:
 
 - [docs/web-mobile-parity-roadmap.md](docs/web-mobile-parity-roadmap.md)
 - [docs/production-hardening-checklist.md](docs/production-hardening-checklist.md)
+- [docs/staging-deploy.md](docs/staging-deploy.md)
 
 Comandos principais:
 
@@ -16,6 +17,17 @@ npm run build
 npm run lint
 npm run smoke:supabase
 ```
+
+Branches:
+
+- `main`: base estavel.
+- `staging`: homologacao.
+
+Deploy:
+
+- Vercel: usar `npm run build` e publicar `dist`.
+- Netlify: usar `npm run build` e publicar `dist`.
+- Configurar `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` e `VITE_APP_NAME` no provedor.
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
