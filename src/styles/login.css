@@ -575,6 +575,59 @@
   .login-card-header h2 { font-size: 24px; }
 }
 
+/* ── Forgot-password / legal helpers ── */
+.forgot-password-link {
+  display: block;
+  text-align: center;
+  font-size: var(--text-caption);
+  color: rgba(255, 255, 255, .55);
+  text-decoration: none;
+  margin-top: 4px;
+  transition: color 0.15s;
+}
+.forgot-password-link:hover { color: rgba(255, 255, 255, .9); }
+
+.forgot-password-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-caption);
+  color: rgba(255, 255, 255, .55);
+  text-decoration: none;
+  margin-top: 8px;
+  transition: color 0.15s;
+}
+.forgot-password-back:hover { color: rgba(255, 255, 255, .9); }
+
+.login-legal-links {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0 20px;
+  font-size: var(--text-caption);
+  color: rgba(255, 255, 255, .35);
+}
+.login-legal-links a {
+  color: rgba(255, 255, 255, .45);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.login-legal-links a:hover { color: rgba(255, 255, 255, .8); }
+
+.form-success-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 12px 0 4px;
+  color: rgba(255, 255, 255, .75);
+  font-size: var(--text-body);
+}
+.form-success-block strong { color: #fff; }
+
 @media (prefers-reduced-motion: reduce) {
   .login-page::before,
   .login-page::after,

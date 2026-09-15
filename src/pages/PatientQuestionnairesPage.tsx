@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, ArrowRight, Check, ClipboardList, Layers3, Play, RotateCcw } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, ClipboardList, Layers3, Play, RotateCcw } from 'lucide-react'
 import { Badge, DataState, EmptyState, PageHeader, StatCard } from '../components/Ui'
 import { Button } from '../components/design-system/Button'
 import { InlineNotice } from '../components/design-system/InlineNotice'
@@ -213,6 +213,8 @@ function QuestionnaireRunner({ session, onClose, onFinished }: {
 export function PatientQuestionnairesPage() {
   const queryClient = useQueryClient()
   const [activeSession, setActiveSession] = useState<QuestionnaireSessionData | null>(null)
+  const [introTarget, setIntroTarget] = useState<PatientPortalQuestionnaireAssignment | null>(null)
+  const [justFinished, setJustFinished] = useState<string | null>(null)
   const [contextTarget, setContextTarget] = useState<PatientPortalQuestionnaireAssignment | null>(null)
   const [selectedContexts, setSelectedContexts] = useState(defaultContexts.map((item) => item.key))
   const [message, setMessage] = useState<{ tone: 'success' | 'error' | 'warning'; text: string } | null>(null)
@@ -249,8 +251,9 @@ export function PatientQuestionnairesPage() {
   })
 
   async function refreshAfterFinish() {
+    const name = activeSession?.questionnaire_name ?? null
     setActiveSession(null)
-    setMessage({ tone: 'success', text: 'Questionário finalizado com sucesso. Seu psicólogo poderá revisar os resultados.' })
+    setJustFinished(name)
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['patient-portal-questionnaires'] }),
       queryClient.invalidateQueries({ queryKey: ['patient-portal-results'] }),
@@ -263,12 +266,33 @@ export function PatientQuestionnairesPage() {
       resumeMutation.mutate(assignment.response_id)
       return
     }
+    setIntroTarget(assignment)
+  }
+
+  function confirmStart(assignment: PatientPortalQuestionnaireAssignment) {
+    setIntroTarget(null)
     if (assignment.questionnaire_code.toUpperCase() === parentalCode) {
       setSelectedContexts(defaultContexts.map((item) => item.key))
       setContextTarget(assignment)
       return
     }
     startMutation.mutate({ assignment })
+  }
+
+  if (justFinished !== null) {
+    return (
+      <div className="page-stack patient-portal-page questionnaire-success-screen">
+        <div className="questionnaire-success-card panel">
+          <CheckCircle2 size={48} className="questionnaire-success-icon" aria-hidden="true" />
+          <h2>Questionário concluído!</h2>
+          {justFinished ? <p><strong>{justFinished}</strong></p> : null}
+          <p>Muito bem! Suas respostas foram salvas e seu psicólogo poderá revisá-las em breve.</p>
+          <Button variant="primary" onClick={() => setJustFinished(null)}>
+            Ver meus questionários
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (activeSession) {
@@ -278,6 +302,46 @@ export function PatientQuestionnairesPage() {
         onClose={() => setActiveSession(null)}
         onFinished={refreshAfterFinish}
       />
+    )
+  }
+
+  if (introTarget) {
+    return (
+      <div className="page-stack patient-portal-page">
+        <div className="questionnaire-intro-card panel">
+          <div className="questionnaire-intro-icon"><ClipboardList size={32} aria-hidden="true" /></div>
+          <div className="questionnaire-intro-body">
+            <span className="eyebrow">Instrumento liberado pelo seu psicólogo</span>
+            <h2>{introTarget.questionnaire_name}</h2>
+            {introTarget.questionnaire_description ? <p>{introTarget.questionnaire_description}</p> : null}
+            {introTarget.message ? (
+              <div className="questionnaire-intro-message">
+                <strong>Orientação do psicólogo:</strong>
+                <p>{introTarget.message}</p>
+              </div>
+            ) : null}
+            <div className="questionnaire-intro-tips">
+              <p>Responda com honestidade, pensando na sua experiência <strong>nas últimas semanas</strong>.</p>
+              <p>Você pode pausar e retomar a qualquer momento sem perder o progresso.</p>
+            </div>
+          </div>
+          <div className="questionnaire-intro-actions">
+            <Button variant="ghost" onClick={() => setIntroTarget(null)}>Voltar</Button>
+            <Button
+              variant="primary"
+              disabled={startMutation.isPending || resumeMutation.isPending}
+              onClick={() => confirmStart(introTarget)}
+            >
+              {startMutation.isPending || resumeMutation.isPending
+                ? 'Preparando...'
+                : introTarget.response_status === 'draft'
+                  ? <><RotateCcw size={16} aria-hidden="true" /> Continuar de onde parei</>
+                  : <><Play size={16} aria-hidden="true" /> Começar agora</>
+              }
+            </Button>
+          </div>
+        </div>
+      </div>
     )
   }
 

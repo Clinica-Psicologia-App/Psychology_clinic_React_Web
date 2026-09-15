@@ -1,9 +1,13 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, HeartPulse, Plus } from 'lucide-react'
+import { Activity, ChevronRight, HeartPulse, Plus } from 'lucide-react'
+import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from 'recharts'
 import { Badge, DataState, EmptyState, PageHeader, StatCard } from '../components/Ui'
 import { Button } from '../components/design-system/Button'
 import { InlineNotice } from '../components/design-system/InlineNotice'
+import { ChartPanel, EmptyChartState } from '../components/design-system/ChartPanel'
+import { chartTheme } from '../components/charts/chartTheme'
 import { createMyDailyMonitor, createMyPatientCheckIn, getPatientPortalMonitoring } from '../services/supabaseQueries'
 
 type CheckInForm = {
@@ -97,6 +101,16 @@ export function PatientMonitoringPage() {
   const checkIns = monitoring.data?.checkIns ?? []
   const monitors = monitoring.data?.dailyMonitors ?? []
 
+  const trendData = [...checkIns]
+    .reverse()
+    .slice(-20)
+    .map((item) => ({
+      date: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' }).format(new Date(item.checked_in_at)),
+      Humor: item.mood_score ?? null,
+      Ansiedade: item.anxiety_score ?? null,
+      Energia: item.energy_score ?? null,
+    }))
+
   return (
     <div className="page-stack patient-portal-page">
       <PageHeader
@@ -122,6 +136,29 @@ export function PatientMonitoringPage() {
           <StatCard label="Último registro" value={checkIns[0] ? formatDateTime(checkIns[0].checked_in_at).slice(0, 10) : '-'} icon={HeartPulse} tone="navy" />
         </section>
 
+        {trendData.length >= 2 ? (
+          <ChartPanel title="Evolução dos check-ins" description="Humor, ansiedade e energia ao longo dos últimos registros." icon={HeartPulse}>
+            <div className="chart-box">
+              <ResponsiveContainer width="100%" height={240}>
+                <LineChart data={trendData} margin={chartTheme.margins}>
+                  <CartesianGrid {...chartTheme.grid} />
+                  <XAxis dataKey="date" {...chartTheme.axis} />
+                  <YAxis {...chartTheme.axis} domain={[0, 10]} ticks={[0, 2, 4, 6, 8, 10]} />
+                  <Tooltip {...chartTheme.tooltip} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Line dataKey="Humor" stroke="var(--green)" strokeWidth={2} dot={false} connectNulls />
+                  <Line dataKey="Ansiedade" stroke="var(--yellow)" strokeWidth={2} dot={false} connectNulls />
+                  <Line dataKey="Energia" stroke="var(--chart-3)" strokeWidth={2} dot={false} connectNulls />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </ChartPanel>
+        ) : checkIns.length > 0 ? (
+          <ChartPanel title="Evolução dos check-ins" description="Realize mais check-ins para ver a evolução ao longo do tempo." icon={HeartPulse}>
+            <div className="chart-box"><EmptyChartState message="Faça pelo menos 2 check-ins para ver a evolução." /></div>
+          </ChartPanel>
+        ) : null}
+
         <section className="monitoring-grid">
           <article className="panel">
             <div className="panel-header">
@@ -131,7 +168,7 @@ export function PatientMonitoringPage() {
             {checkIns.length ? (
               <div className="monitoring-list">
                 {checkIns.map((item) => (
-                  <div className="monitoring-item" key={item.id}>
+                  <Link className="monitoring-item monitoring-item-link" to={`/meu-acompanhamento/check-in/${item.id}`} key={item.id}>
                     <div>
                       <strong>{formatDateTime(item.checked_in_at)}</strong>
                       <span>{item.notes || 'Sem observações adicionais.'}</span>
@@ -142,7 +179,8 @@ export function PatientMonitoringPage() {
                       <Badge tone="info">Energia {item.energy_score ?? '-'}</Badge>
                       <Badge tone="neutral">Intensidade {item.problem_intensity_score ?? '-'}</Badge>
                     </div>
-                  </div>
+                    <ChevronRight size={16} aria-hidden="true" className="monitoring-item-chevron" />
+                  </Link>
                 ))}
               </div>
             ) : (

@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { GitBranch, LockKeyhole, Trash2, UserRoundPlus, UsersRound } from 'lucide-react'
+import { GitBranch, LayoutList, Network, LockKeyhole, Trash2, UserRoundPlus, UsersRound } from 'lucide-react'
 import { Button } from '../design-system/Button'
 import { EmptyState } from '../design-system/EmptyState'
+import { GenogramDiagram } from './GenogramDiagram'
 import { deleteGenogramPerson, deleteGenogramRelationship, getPatientGenogram, saveGenogramPerson, saveGenogramRelationship } from '../../services/supabaseQueries'
 import type { GenogramPersonRow, GenogramRelationshipRow, PatientDetailData } from '../../types'
 
@@ -96,6 +97,7 @@ export function PatientGenogramManager({ data }: { data: PatientDetailData }) {
   const [relationshipForm, setRelationshipForm] = useState<RelationshipForm | null>(null)
   const [deletePersonTarget, setDeletePersonTarget] = useState<GenogramPersonRow | null>(null)
   const [deleteRelationshipTarget, setDeleteRelationshipTarget] = useState<GenogramRelationshipRow | null>(null)
+  const [viewMode, setViewMode] = useState<'diagram' | 'list'>('diagram')
 
   const genogram = useQuery({
     queryKey: ['patient-genogram', data.patient.id],
@@ -194,7 +196,14 @@ export function PatientGenogramManager({ data }: { data: PatientDetailData }) {
           <p>Mapa familiar com pessoas, vínculos e leitura clínica inicial.</p>
         </div>
         <div className="table-actions">
-          <Button variant="secondary" size="sm" disabled={persons.length < 2} onClick={() => setRelationshipForm(emptyRelationship)}><GitBranch size={16} aria-hidden="true" /> Novo vínculo</Button>
+          {persons.length > 0 ? (
+            <>
+              <Button variant="ghost" size="sm" onClick={() => setViewMode(viewMode === 'diagram' ? 'list' : 'diagram')}>
+                {viewMode === 'diagram' ? <><LayoutList size={15} aria-hidden="true" /> Lista</> : <><Network size={15} aria-hidden="true" /> Diagrama</>}
+              </Button>
+              <Button variant="secondary" size="sm" disabled={persons.length < 2} onClick={() => setRelationshipForm(emptyRelationship)}><GitBranch size={16} aria-hidden="true" /> Novo vínculo</Button>
+            </>
+          ) : null}
           <Button variant="primary" size="sm" onClick={() => setPersonForm(emptyPerson)}><UserRoundPlus size={16} aria-hidden="true" /> Nova pessoa</Button>
         </div>
       </div>
@@ -204,6 +213,14 @@ export function PatientGenogramManager({ data }: { data: PatientDetailData }) {
       ) : null}
 
       {persons.length ? (
+        viewMode === 'diagram' ? (
+          <GenogramDiagram
+            patientName={data.patient.full_name}
+            persons={persons}
+            relationships={relationships}
+            onNodeClick={(person) => setPersonForm(toForm(person))}
+          />
+        ) : (
         <div className="genogram-layout">
           <section className="genogram-diagram" aria-label="Diagrama do genograma">
             <div className="genogram-patient-node">
@@ -242,6 +259,7 @@ export function PatientGenogramManager({ data }: { data: PatientDetailData }) {
             )) : <p className="chart-empty">Nenhum vínculo registrado.</p>}
           </section>
         </div>
+        )
       ) : (
         <EmptyState icon={UsersRound} title="Genograma ainda vazio" description="Cadastre familiares ou pessoas significativas para iniciar o diagrama." />
       )}
