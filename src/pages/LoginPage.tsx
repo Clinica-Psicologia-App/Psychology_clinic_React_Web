@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { Loader2, LockKeyhole } from 'lucide-react'
 import { Button } from '../components/design-system/Button'
 import { useAuth } from '../context/auth'
@@ -95,7 +95,15 @@ export function LoginPage() {
           {loading ? <Loader2 className="spin" size={18} aria-hidden="true" /> : null}
           Acessar painel
         </Button>
+
+        <Link to="/forgot-password" className="forgot-password-link">Esqueci minha senha</Link>
       </form>
+
+      <nav className="login-legal-links">
+        <Link to="/termos">Termos de uso</Link>
+        <span aria-hidden="true">·</span>
+        <Link to="/privacidade">Política de privacidade</Link>
+      </nav>
     </main>
   )
 }

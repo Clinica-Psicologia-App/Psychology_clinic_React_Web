@@ -92,8 +92,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthError(null)
   }
 
+  async function resetPassword(email: string) {
+    const { error } = await getSupabase().auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/update-password`,
+    })
+    if (error) throw error
+  }
+
+  async function updatePassword(password: string) {
+    const { error } = await getSupabase().auth.updateUser({ password })
+    if (error) throw error
+  }
+
   const value = useMemo(
-    () => ({ session, profile, loading, authError, signIn, signOut, refreshProfile }),
+    () => ({ session, profile, loading, authError, signIn, signOut, refreshProfile, resetPassword, updatePassword }),
     [session, profile, loading, authError],
   )
 

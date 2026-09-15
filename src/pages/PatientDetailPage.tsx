@@ -23,6 +23,8 @@ import { PatientCaseConceptualizationManager } from '../components/clinical/Pati
 import { PatientInfographicPanel } from '../components/clinical/PatientInfographicPanel'
 import { PatientPersonalityManager } from '../components/clinical/PatientPersonalityManager'
 import { PatientClinicalReportPanel } from '../components/clinical/PatientClinicalReportPanel'
+import { PatientScoreEvolutionPanel } from '../components/clinical/PatientScoreEvolutionPanel'
+import { PatientMonitoringPanel } from '../components/clinical/PatientMonitoringPanel'
 
 function percent(part: number, total: number) {
   if (!total) return 0
@@ -172,7 +174,10 @@ export function PatientDetailPage() {
 
             <PatientResultsBreakdown data={data} />
 
+            <PatientMonitoringPanel data={data} />
+
             <section className="detail-grid">
+              <PatientScoreEvolutionPanel data={data} />
               <MonthlyResponsesChart
                 data={data.monthlyResponses}
                 title="Respostas ao longo do tempo"

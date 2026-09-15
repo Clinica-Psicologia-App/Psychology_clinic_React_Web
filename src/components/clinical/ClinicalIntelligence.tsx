@@ -24,6 +24,7 @@ import type { PatientDetailData } from '../../types'
 import { Badge } from '../design-system/Badge'
 import { Button } from '../design-system/Button'
 import { EmptyState } from '../design-system/EmptyState'
+import { TherapeuticTrail } from './TherapeuticTrail'
 import { createPatientTimelineEvent, createTherapyGoal, setPatientResourceReleased } from '../../services/supabaseQueries'
 
 type WorkspaceTab = 'map' | 'timeline' | 'session' | 'journey' | 'resources'
@@ -88,16 +89,6 @@ export function ClinicalIntelligence({ data, onChanged }: { data: PatientDetailD
     score += Math.min(20, Math.round(completionRate / 5))
     return Math.min(100, score)
   }, [completionRate, data])
-
-  const journey = [
-    { label: 'Avaliação inicial', done: Boolean(data.patient.birth_date || data.patient.occupation), detail: 'Cadastro e contexto inicial' },
-    { label: 'Formulação do caso', done: data.timelineEvents.length > 0, detail: `${data.timelineEvents.length} eventos mapeados` },
-    { label: 'Objetivos', done: data.goals.length > 0, detail: `${data.totals.activeGoals} objetivos ativos` },
-    { label: 'Intervenção', done: data.resources.some((item) => item.is_released), detail: `${data.resources.filter((item) => item.is_released).length} recursos liberados` },
-    { label: 'Monitoramento', done: data.checkIns.length + data.dailyMonitors.length > 0, detail: `${data.checkIns.length + data.dailyMonitors.length} registros` },
-    { label: 'Reavaliação', done: data.totals.completedResponses > 1, detail: `${data.totals.completedResponses} avaliações concluídas` },
-  ]
-  const currentJourneyIndex = Math.min(journey.findIndex((stage) => !stage.done), journey.length - 1)
 
   const unifiedTimeline = useMemo(() => [
     ...data.timelineEvents.map((event) => ({
@@ -221,15 +212,7 @@ export function ClinicalIntelligence({ data, onChanged }: { data: PatientDetailD
         ) : null}
 
         {activeTab === 'journey' ? (
-          <div className="journey-board">
-            <div className="clinical-view-actions"><div><h3>Jornada terapêutica</h3><p>Progresso operacional do acompanhamento.</p></div><Button variant="secondary" size="sm" onClick={() => setGoalForm({ title: '', description: '', target_date: '' })}>Novo objetivo</Button></div>
-            <div className="journey-progress"><span style={{ width: `${(journey.filter((stage) => stage.done).length / journey.length) * 100}%` }} /></div>
-            <div className="journey-stages">{journey.map((stage, index) => (
-              <article className={clsx(stage.done && 'done', index === currentJourneyIndex && 'current')} key={stage.label}>
-                <div>{stage.done ? <CheckCircle2 size={17} /> : <span>{index + 1}</span>}</div><strong>{stage.label}</strong><p>{stage.detail}</p>{index === currentJourneyIndex ? <Badge tone="info">Etapa atual</Badge> : null}
-              </article>
-            ))}</div>
-          </div>
+          <TherapeuticTrail data={data} onNavigate={(tab) => setActiveTab(tab)} />
         ) : null}
 
         {activeTab === 'resources' ? (

@@ -1,14 +1,16 @@
 ﻿import { useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
   Activity,
   BarChart3,
   BookOpenCheck,
   Brain,
   Building2,
+  CalendarDays,
   ClipboardCheck,
   ClipboardList,
   FileSearch,
+  Heart,
   Layers3,
   LayoutDashboard,
   LogOut,
@@ -28,6 +30,7 @@ import { Avatar } from './design-system/Avatar'
 import { Button } from './design-system/Button'
 import esquemaCoreIcon from '../assets/esquema-core-icon.png'
 import { canAccessAdminPanel, isPlatformAdminScope } from '../lib/roleAccess'
+import { OnboardingTour, useOnboardingTour } from './OnboardingTour'
 import type { AdminProfile } from '../types'
 
 type NavItem = {
@@ -70,6 +73,8 @@ function buildNavGroups(profile: AdminProfile | null): NavGroup[] {
           { to: '/meus-recursos', label: 'Recursos', icon: BookOpenCheck, feature: 'resources' },
           { to: '/minha-biblioteca', label: 'Biblioteca', icon: BookOpenCheck, feature: 'library' },
           { to: '/minha-psicoeducacao', label: 'Psicoeducação', icon: BookOpenCheck, feature: 'psychoeducation' },
+          { to: '/minha-linha-do-tempo', label: 'Linha do tempo', icon: CalendarDays },
+          { to: '/minha-familia', label: 'Minha família', icon: Heart, feature: 'genogram' },
           { to: '/meu-genograma', label: 'Genograma', icon: Users, feature: 'genogram' },
           { to: '/minha-personalidade', label: 'Personalidade', icon: Brain, feature: 'personality' },
           { to: '/meus-resultados', label: 'Meus resultados', icon: ClipboardList, feature: 'questionnaires' },
@@ -164,6 +169,7 @@ export function AppLayout() {
   const location = useLocation()
   const routeLabel = getRouteLabel(location.pathname)
   const navGroups = buildNavGroups(profile)
+  const tour = useOnboardingTour(profile?.role ?? 'admin')
     .map((group) => ({
       ...group,
       items: group.items.filter((item) => isFeatureEnabled(item.feature)),
@@ -216,13 +222,13 @@ export function AppLayout() {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="profile-chip">
+          <Link to="/perfil" className="profile-chip profile-chip-link">
             <Avatar identity={profile} size="md" />
             <div>
               <strong>{profile?.full_name ?? 'Administrador'}</strong>
               <span>{profile?.email}</span>
             </div>
-          </div>
+          </Link>
           <Button variant="ghost" fullWidth onClick={signOut}>
             <LogOut size={18} aria-hidden="true" />
             Sair
@@ -267,6 +273,10 @@ export function AppLayout() {
           </div>
         </main>
       </div>
+
+      {tour.open && profile ? (
+        <OnboardingTour role={profile.role} onDismiss={tour.dismiss} />
+      ) : null}
     </div>
   )
 }

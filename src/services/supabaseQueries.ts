@@ -159,6 +159,32 @@ export async function getCurrentProfile(): Promise<AdminProfile | null> {
   return byEmail.data ? withAuthAvatar(byEmail.data as AdminProfile, user.user_metadata) : null
 }
 
+export async function updateMyProfile(input: { full_name: string }) {
+  const client = getSupabase()
+  const { data: userData, error: userError } = await client.auth.getUser()
+  throwIfError(userError)
+  const userId = userData.user?.id
+  if (!userId) throw new Error('Usuário não autenticado.')
+  const { error } = await client.from('profiles').update({ full_name: input.full_name.trim() }).eq('id', userId)
+  throwIfError(error)
+}
+
+export async function saveMyAvatar(config: {
+  avatar_type: 'initials' | 'photo'
+  avatar_url?: string | null
+  avatar_config?: Record<string, unknown> | null
+}) {
+  const client = getSupabase()
+  const { error } = await client.auth.updateUser({
+    data: {
+      avatar_type: config.avatar_type,
+      avatar_url: config.avatar_url ?? null,
+      avatar_config: config.avatar_config ?? null,
+    },
+  })
+  throwIfError(error)
+}
+
 export async function getDashboardData(): Promise<DashboardData> {
   const client = getSupabase()
   const [clinics, activeClinics, users, psychologists, patients, activePatients, questionnaires, responses] = await Promise.all([
@@ -2164,6 +2190,19 @@ export async function getPatientPortalMonitoring() {
   }
 }
 
+export async function getMyPatientCheckIn(checkInId: string) {
+  const client = getSupabase()
+  const { patientId } = await getCurrentPatientContext(client)
+  const { data, error } = await client
+    .from('patient_check_ins')
+    .select('id, mood_score, anxiety_score, energy_score, problem_intensity_score, notes, checked_in_at')
+    .eq('id', checkInId)
+    .eq('patient_id', patientId)
+    .maybeSingle()
+  throwIfError(error)
+  return data as PatientDetailData['checkIns'][number] | null
+}
+
 export async function createMyPatientCheckIn(input: {
   mood_score?: number | null
   anxiety_score?: number | null
@@ -2501,6 +2540,42 @@ export async function getPatientGenogram(patientId: string): Promise<GenogramDat
 export async function getPatientPortalGenogram(): Promise<GenogramData> {
   const { patientId } = await getCurrentPatientContext()
   return getPatientGenogram(patientId)
+}
+
+export async function getPatientPortalTimeline(): Promise<PatientTimelineEventRow[]> {
+  const client = getSupabase()
+  const { patientId } = await getCurrentPatientContext(client)
+  const { data, error } = await client
+    .from('patient_timeline_events')
+    .select('id, clinic_id, patient_id, created_by, title, description, event_date, period_label, category, emotional_impact, is_sensitive, created_at, updated_at')
+    .eq('patient_id', patientId)
+    .order('event_date', { ascending: true, nullsFirst: false })
+  throwIfError(error)
+  return (data ?? []) as PatientTimelineEventRow[]
+}
+
+export async function createMyTimelineEvent(input: {
+  title: string
+  description?: string | null
+  event_date?: string | null
+  period_label?: string | null
+  category?: string | null
+  emotional_impact?: number | null
+}) {
+  const client = getSupabase()
+  const { patientId, clinicId } = await getCurrentPatientContext(client)
+  const { error } = await client.from('patient_timeline_events').insert({
+    clinic_id: clinicId,
+    patient_id: patientId,
+    title: input.title.trim(),
+    description: clean(input.description),
+    event_date: input.event_date || null,
+    period_label: clean(input.period_label),
+    category: input.category || 'historia_de_vida',
+    emotional_impact: input.emotional_impact ?? null,
+    is_sensitive: false,
+  })
+  throwIfError(error)
 }
 
 export async function saveGenogramPerson(input: {
