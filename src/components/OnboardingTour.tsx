@@ -96,10 +96,13 @@ function storageKey(role: ProfileRole) {
   return role === 'patient' ? STORAGE_KEY_PATIENT : STORAGE_KEY_PSYCH
 }
 
+const TOUR_ROLES: ProfileRole[] = ['psychologist', 'patient']
+
 export function useOnboardingTour(role: ProfileRole) {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
+    if (!TOUR_ROLES.includes(role)) return
     try {
       const done = localStorage.getItem(storageKey(role))
       if (!done) setOpen(true)

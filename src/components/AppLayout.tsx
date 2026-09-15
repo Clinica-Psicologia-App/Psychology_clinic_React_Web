@@ -151,6 +151,11 @@ const routeLabels: Record<string, string> = {
   '/planos': 'Planos',
   '/auditoria': 'Auditoria',
   '/configuracoes': 'Configurações',
+  '/minha-linha-do-tempo': 'Minha linha do tempo',
+  '/minha-familia': 'Minha família',
+  '/referencias-modos': 'Modos do esquema',
+  '/perfil': 'Meu perfil',
+  '/biblioteca-clinica': 'Biblioteca clínica',
 }
 
 function getRouteLabel(pathname: string) {
