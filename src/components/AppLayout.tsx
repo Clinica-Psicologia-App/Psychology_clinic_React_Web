@@ -30,7 +30,8 @@ import { Avatar } from './design-system/Avatar'
 import { Button } from './design-system/Button'
 import esquemaCoreIcon from '../assets/esquema-core-icon.png'
 import { canAccessAdminPanel, isPlatformAdminScope } from '../lib/roleAccess'
-import { OnboardingTour, useOnboardingTour } from './OnboardingTour'
+import { OnboardingTour } from './OnboardingTour'
+import { useOnboardingTour } from '../hooks/useOnboardingTour'
 import type { AdminProfile } from '../types'
 
 type NavItem = {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Activity, BookOpen, CalendarDays, ChevronLeft, ChevronRight,
@@ -89,37 +89,8 @@ const TONE_VARS: Record<string, string> = {
   cyan: 'var(--chart-3)',
 }
 
-const STORAGE_KEY_PSYCH = 'onboarding_psych_done'
-const STORAGE_KEY_PATIENT = 'onboarding_patient_done'
-
-function storageKey(role: ProfileRole) {
-  return role === 'patient' ? STORAGE_KEY_PATIENT : STORAGE_KEY_PSYCH
-}
-
-const TOUR_ROLES: ProfileRole[] = ['psychologist', 'patient']
-
-export function useOnboardingTour(role: ProfileRole) {
-  const [open, setOpen] = useState(false)
-
-  useEffect(() => {
-    if (!TOUR_ROLES.includes(role)) return
-    try {
-      const done = localStorage.getItem(storageKey(role))
-      if (!done) setOpen(true)
-    } catch {}
-  }, [role])
-
-  function dismiss() {
-    try { localStorage.setItem(storageKey(role), '1') } catch {}
-    setOpen(false)
-  }
-
-  function reopen() {
-    setOpen(true)
-  }
-
-  return { open, dismiss, reopen }
-}
+const STORAGE_KEY = (role: ProfileRole) =>
+  role === 'patient' ? 'onboarding_patient_done' : 'onboarding_psych_done'
 
 export function OnboardingTour({ role, onDismiss }: { role: ProfileRole; onDismiss: () => void }) {
   const navigate = useNavigate()
@@ -131,7 +102,7 @@ export function OnboardingTour({ role, onDismiss }: { role: ProfileRole; onDismi
   const isLast = step === steps.length - 1
 
   function finish() {
-    try { localStorage.setItem(storageKey(role), '1') } catch {}
+    try { localStorage.setItem(STORAGE_KEY(role), '1') } catch {}
     onDismiss()
   }
 
