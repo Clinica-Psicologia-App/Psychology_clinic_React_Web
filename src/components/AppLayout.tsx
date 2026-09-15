@@ -175,12 +175,12 @@ export function AppLayout() {
   const location = useLocation()
   const routeLabel = getRouteLabel(location.pathname)
   const navGroups = buildNavGroups(profile)
-  const tour = useOnboardingTour(profile?.role ?? 'admin')
     .map((group) => ({
       ...group,
       items: group.items.filter((item) => isFeatureEnabled(item.feature)),
     }))
     .filter((group) => group.items.length)
+  const tour = useOnboardingTour(profile?.role ?? 'admin')
 
   return (
     <div className="app-shell">
