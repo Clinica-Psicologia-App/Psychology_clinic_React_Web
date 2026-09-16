@@ -48,7 +48,7 @@ export function StaffLibraryCatalogPage() {
 
       <FilterBar>
         <SearchField value={search} onChange={setSearch} placeholder="Buscar por título, sinopse ou gênero..." />
-        <FilterSelect value={typeFilter} onChange={setTypeFilter}>
+        <FilterSelect value={typeFilter} onChange={setTypeFilter} label="Filtrar por tipo">
           <option value="all">Todos os tipos</option>
           <option value="filme">Filmes</option>
           <option value="série">Séries</option>

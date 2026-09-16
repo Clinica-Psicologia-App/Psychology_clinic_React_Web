@@ -57,10 +57,10 @@ export function PatientCheckInDetailPage() {
                 <HeartPulse size={20} aria-hidden="true" />
               </div>
               <div className="check-in-scores-list">
-                <ScoreBar label="Humor" value={item.mood_score} tone="success" />
-                <ScoreBar label="Ansiedade" value={item.anxiety_score} tone="warning" />
-                <ScoreBar label="Energia" value={item.energy_score} tone="info" />
-                <ScoreBar label="Intensidade do problema" value={item.problem_intensity_score} tone="neutral" />
+                <ScoreBar label="Humor" value={item.mood_score ?? null} tone="success" />
+                <ScoreBar label="Ansiedade" value={item.anxiety_score ?? null} tone="warning" />
+                <ScoreBar label="Energia" value={item.energy_score ?? null} tone="info" />
+                <ScoreBar label="Intensidade do problema" value={item.problem_intensity_score ?? null} tone="neutral" />
               </div>
             </article>
 

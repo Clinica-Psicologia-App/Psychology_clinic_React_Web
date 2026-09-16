@@ -203,7 +203,7 @@ export function PatientTimelinePage() {
             <header>
               <h2>Adicionar evento de vida</h2>
               <div className="wizard-steps">
-                <span className={step === 'category' ? 'active' : step !== 'category' ? 'done' : ''}>1. Tipo</span>
+                <span className={step === 'category' ? 'active' : 'done'}>1. Tipo</span>
                 <span className="wizard-sep">›</span>
                 <span className={step === 'details' ? 'active' : step === 'period' ? 'done' : ''}>2. Detalhes</span>
                 <span className="wizard-sep">›</span>

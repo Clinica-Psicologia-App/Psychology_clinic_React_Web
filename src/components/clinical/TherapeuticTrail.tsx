@@ -47,7 +47,7 @@ function buildStages(data: PatientDetailData): Stage[] {
         { label: 'Nome e dados básicos', done: Boolean(data.patient.full_name) },
         { label: 'Data de nascimento', done: Boolean(data.patient.birth_date) },
         { label: 'Ocupação / contexto', done: Boolean(data.patient.occupation) },
-        { label: 'Queixa principal', done: Boolean(data.patient.main_complaint) },
+        { label: 'Queixa principal', done: Boolean(data.patient.therapy_demands) },
       ],
       navigateTo: 'map',
       navigateLabel: 'Ver mapa clínico',
