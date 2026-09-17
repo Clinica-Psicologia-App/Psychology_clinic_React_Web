@@ -180,8 +180,8 @@ p { margin: 0; color: var(--text-muted); line-height: var(--leading-normal); }
 }
 
 .avatar-token {
-  --avatar-bg: var(--color-brand-accent-soft);
-  --avatar-fg: var(--color-brand-navy);
+  --avatar-bg: var(--color-brand-navy);
+  --avatar-fg: #ffffff;
   --avatar-accent: var(--color-brand-accent);
   position: relative;
   flex-shrink: 0;
