@@ -1,5 +1,4 @@
 {
-  "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
     {
@@ -31,7 +30,7 @@
   ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!assets/).*)",
       "destination": "/index.html"
     }
   ]
