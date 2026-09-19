@@ -189,7 +189,7 @@ export function ClinicalIntelligence({ data, onChanged }: { data: PatientDetailD
             <div className="clinical-timeline-h">
               <div className="timeline-h-track">
                 {unifiedTimeline.slice(0, 18).map((item, index) => (
-                  <article key={item.id} className={`timeline-h-event ${index % 2 === 0 ? 'ht-above' : 'ht-below'}`}>
+                  <article key={item.id} className={`timeline-h-event ${index % 2 === 0 ? 'ht-above' : 'ht-below'}`} data-category={item.type}>
                     <div className="timeline-h-card">
                       <div className="timeline-title"><strong>{item.title}</strong><Badge tone="neutral">{item.type}</Badge>{item.sensitive ? <LockKeyhole size={14} aria-label="Conteúdo sensível" /> : null}</div>
                       <p>{item.detail}</p>
