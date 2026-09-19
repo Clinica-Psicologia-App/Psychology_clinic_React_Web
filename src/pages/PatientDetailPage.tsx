@@ -1,6 +1,7 @@
-﻿import { useQuery } from '@tanstack/react-query'
+﻿import React, { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, CalendarDays, ClipboardList, FileSearch, HeartPulse, LockKeyhole, Mail, Phone, Printer, Target, UserRoundCheck, Users } from 'lucide-react'
+import { Activity, ArrowLeft, Brain, CalendarDays, ClipboardList, FileSearch, HeartPulse, LayoutDashboard, LockKeyhole, Mail, Phone, Printer, Target, UserRoundCheck, Users } from 'lucide-react'
 import { Button } from '../components/design-system/Button'
 import { MonthlyResponsesChart } from '../components/charts/MonthlyResponsesChart'
 import { Badge, ChartPanel, DataState, EmptyState, EntityHeader, PageHeader, StatCard, StatusBadge } from '../components/Ui'
@@ -71,9 +72,21 @@ function actionLabel(action: string) {
   return labels[action] ?? action
 }
 
+type TabId = 'overview' | 'assessment' | 'formulation' | 'plan' | 'questionnaires' | 'history'
+
+const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
+  { id: 'overview',       label: 'Visão Geral',   icon: LayoutDashboard },
+  { id: 'assessment',     label: 'Avaliação',      icon: ClipboardList },
+  { id: 'formulation',    label: 'Formulação',     icon: Brain },
+  { id: 'plan',           label: 'Plano Clínico',  icon: Target },
+  { id: 'questionnaires', label: 'Questionários',  icon: HeartPulse },
+  { id: 'history',        label: 'Histórico',      icon: Activity },
+]
+
 export function PatientDetailPage() {
   const { profile } = useAuth()
   const { patientId } = useParams()
+  const [activeTab, setActiveTab] = useState<TabId>('overview')
   const platformScope = isPlatformAdminScope(profile)
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['patient-detail', patientId],
@@ -154,127 +167,158 @@ export function PatientDetailPage() {
               <StatCard label="Auditoria" value={data.totals.auditEvents} icon={FileSearch} tone="navy" detail="Eventos relacionados" />
             </section>
 
-            <PatientCompletenessPanel data={data} />
+            {/* Tab bar */}
+            <nav className="patient-tab-bar" aria-label="Seções do prontuário">
+              {TABS.map((tab) => {
+                const Icon = tab.icon
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={`patient-tab-btn${activeTab === tab.id ? ' active' : ''}`}
+                    onClick={() => setActiveTab(tab.id)}
+                    aria-selected={activeTab === tab.id}
+                  >
+                    <Icon size={14} aria-hidden="true" />
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </nav>
 
-            <PatientInfographicPanel data={data} />
+            {/* Visão Geral */}
+            {activeTab === 'overview' && (
+              <div className="patient-tab-panel">
+                <PatientCompletenessPanel data={data} />
+                <PatientInfographicPanel data={data} />
+                <PatientClinicalReportPanel data={data} />
+              </div>
+            )}
 
-            <PatientClinicalReportPanel data={data} />
+            {/* Avaliação */}
+            {activeTab === 'assessment' && (
+              <div className="patient-tab-panel">
+                <ClinicalIntelligence data={data} onChanged={() => refetch()} />
+                <PatientInitialAssessmentManager data={data} onChanged={() => refetch()} />
+                <PatientInitialAssessmentPanel data={data} />
+                <PatientMentalMapSummary data={data} />
+              </div>
+            )}
 
-            <ClinicalIntelligence data={data} onChanged={() => refetch()} />
+            {/* Formulação */}
+            {activeTab === 'formulation' && (
+              <div className="patient-tab-panel">
+                <PatientGenogramManager data={data} />
+                <PatientFamilyContextPanel data={data} />
+                <PatientCaseConceptualizationManager data={data} />
+                <PatientClinicalHypothesesPanel data={data} />
+                <PatientPersonalityManager data={data} />
+              </div>
+            )}
 
-            <PatientInitialAssessmentManager data={data} onChanged={() => refetch()} />
+            {/* Plano Clínico */}
+            {activeTab === 'plan' && (
+              <div className="patient-tab-panel">
+                <PatientProblemsManager data={data} onChanged={() => refetch()} />
+                <PatientGoalsManager data={data} onChanged={() => refetch()} />
+                <PatientTimelineManager data={data} onChanged={() => refetch()} />
+              </div>
+            )}
 
-            <PatientInitialAssessmentPanel data={data} />
+            {/* Questionários */}
+            {activeTab === 'questionnaires' && (
+              <div className="patient-tab-panel">
+                <PatientQuestionnaireManager data={data} onChanged={() => refetch()} />
+                <PatientResultsReleasePanel data={data} onChanged={() => refetch()} />
+                <PatientResultsBreakdown data={data} />
+                <PatientSchemaActivationsPanel data={data} />
+                <PatientMonitoringPanel data={data} />
+                <PatientScoreEvolutionPanel data={data} />
+                <MonthlyResponsesChart
+                  data={data.monthlyResponses}
+                  title="Respostas ao longo do tempo"
+                  description="Questionários criados e concluídos nos últimos 12 meses."
+                />
+              </div>
+            )}
 
-            <PatientMentalMapSummary data={data} />
+            {/* Histórico */}
+            {activeTab === 'history' && (
+              <div className="patient-tab-panel">
+                <PatientLibraryManager data={data} />
 
-            <PatientGenogramManager data={data} />
+                <ChartPanel title="Perfil cadastral" description="Dados informados no cadastro do paciente." icon={UserRoundCheck}>
+                  <div className="profile-kv-grid">
+                    <div><span>CPF</span><strong>{data.patient.cpf || 'Não informado'}</strong></div>
+                    <div><span>Nascimento</span><strong>{data.patient.birth_date ? formatDate(data.patient.birth_date) : 'Não informado'}</strong></div>
+                    <div><span>Gênero</span><strong>{data.patient.gender || 'Não informado'}</strong></div>
+                    <div><span>Estado civil</span><strong>{data.patient.relationship_status || 'Não informado'}</strong></div>
+                    <div><span>Escolaridade</span><strong>{data.patient.education_level || 'Não informado'}</strong></div>
+                    <div><span>Ocupação</span><strong>{data.patient.occupation || 'Não informado'}</strong></div>
+                    <div><span>Tem filhos</span><strong>{yesNo(data.patient.has_children)}</strong></div>
+                    <div><span>Inativado em</span><strong>{data.patient.inactivated_at ? formatDate(data.patient.inactivated_at) : 'Não'}</strong></div>
+                  </div>
+                </ChartPanel>
 
-            <PatientFamilyContextPanel data={data} />
-
-            <PatientCaseConceptualizationManager data={data} />
-
-            <PatientClinicalHypothesesPanel data={data} />
-
-            <PatientPersonalityManager data={data} />
-
-            <PatientProblemsManager data={data} onChanged={() => refetch()} />
-
-            <PatientGoalsManager data={data} onChanged={() => refetch()} />
-
-            <PatientTimelineManager data={data} onChanged={() => refetch()} />
-
-            <PatientLibraryManager data={data} />
-
-            <PatientQuestionnaireManager data={data} onChanged={() => refetch()} />
-
-            <PatientResultsReleasePanel data={data} onChanged={() => refetch()} />
-
-            <PatientResultsBreakdown data={data} />
-
-            <PatientSchemaActivationsPanel data={data} />
-
-            <PatientMonitoringPanel data={data} />
-
-            <section className="detail-grid">
-              <PatientScoreEvolutionPanel data={data} />
-              <MonthlyResponsesChart
-                data={data.monthlyResponses}
-                title="Respostas ao longo do tempo"
-                description="Questionários criados e concluídos nos últimos 12 meses."
-              />
-
-              <ChartPanel title="Perfil cadastral" description="Dados informados no cadastro do paciente." icon={UserRoundCheck}>
-                <div className="profile-kv-grid">
-                  <div><span>CPF</span><strong>{data.patient.cpf || 'Não informado'}</strong></div>
-                  <div><span>Nascimento</span><strong>{data.patient.birth_date ? formatDate(data.patient.birth_date) : 'Não informado'}</strong></div>
-                  <div><span>Gênero</span><strong>{data.patient.gender || 'Não informado'}</strong></div>
-                  <div><span>Estado civil</span><strong>{data.patient.relationship_status || 'Não informado'}</strong></div>
-                  <div><span>Escolaridade</span><strong>{data.patient.education_level || 'Não informado'}</strong></div>
-                  <div><span>Ocupação</span><strong>{data.patient.occupation || 'Não informado'}</strong></div>
-                  <div><span>Tem filhos</span><strong>{yesNo(data.patient.has_children)}</strong></div>
-                  <div><span>Inativado em</span><strong>{data.patient.inactivated_at ? formatDate(data.patient.inactivated_at) : 'Não'}</strong></div>
-                </div>
-              </ChartPanel>
-            </section>
-
-            <section className="detail-tables-grid">
-              <article className="panel report-table-panel">
-                <div className="panel-header">
-                  <div><h2>Respostas recentes</h2><p>Questionários respondidos ou em andamento.</p></div>
-                  <ClipboardList size={20} aria-hidden="true" />
-                </div>
-                <div className="table-card compact-table report-table detail-table">
-                  <table>
-                    <thead><tr><th>Questionário</th><th>Status</th><th>Criado em</th><th>Concluído em</th></tr></thead>
-                    <tbody>
-                      {latestResponses.map((response) => (
-                        <tr key={response.id}>
-                          <td><strong>{response.questionnaire_name}</strong><small>{response.questionnaire_code}</small></td>
-                          <td><Badge tone={responseStatusTone(response.status)}>{responseStatusLabel(response.status)}</Badge></td>
-                          <td>{formatDateTime(response.created_at)}</td>
-                          <td>{response.completed_at ? formatDateTime(response.completed_at) : '—'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {!latestResponses.length ? <div className="empty">Nenhuma resposta registrada para este paciente.</div> : null}
-                </div>
-              </article>
-
-              <ChartPanel title="Auditoria relacionada" description="Eventos sensíveis vinculados ao paciente." icon={FileSearch}>
-                <div className="executive-list compact-list">
-                  {latestAudit.map((event) => (
-                    <div key={event.id}>
-                      <strong>{actionLabel(event.action)} em {event.entity_type}</strong>
-                      <span>{event.actor_name} · {formatDateTime(event.occurred_at)}</span>
+                <section className="detail-tables-grid">
+                  <article className="panel report-table-panel">
+                    <div className="panel-header">
+                      <div><h2>Respostas recentes</h2><p>Questionários respondidos ou em andamento.</p></div>
+                      <ClipboardList size={20} aria-hidden="true" />
                     </div>
-                  ))}
-                  {!latestAudit.length ? <p className="chart-empty">Nenhum evento de auditoria encontrado.</p> : null}
-                </div>
-              </ChartPanel>
-            </section>
+                    <div className="table-card compact-table report-table detail-table">
+                      <table>
+                        <thead><tr><th>Questionário</th><th>Status</th><th>Criado em</th><th>Concluído em</th></tr></thead>
+                        <tbody>
+                          {latestResponses.map((response) => (
+                            <tr key={response.id}>
+                              <td><strong>{response.questionnaire_name}</strong><small>{response.questionnaire_code}</small></td>
+                              <td><Badge tone={responseStatusTone(response.status)}>{responseStatusLabel(response.status)}</Badge></td>
+                              <td>{formatDateTime(response.created_at)}</td>
+                              <td>{response.completed_at ? formatDateTime(response.completed_at) : '—'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {!latestResponses.length ? <div className="empty">Nenhuma resposta registrada para este paciente.</div> : null}
+                    </div>
+                  </article>
 
-            <article className="panel">
-              <div className="panel-header">
-                <div><h2>Vínculos operacionais</h2><p>Navegue para os registros relacionados.</p></div>
-                <Users size={20} aria-hidden="true" />
+                  <ChartPanel title="Auditoria relacionada" description="Eventos sensíveis vinculados ao paciente." icon={FileSearch}>
+                    <div className="executive-list compact-list">
+                      {latestAudit.map((event) => (
+                        <div key={event.id}>
+                          <strong>{actionLabel(event.action)} em {event.entity_type}</strong>
+                          <span>{event.actor_name} · {formatDateTime(event.occurred_at)}</span>
+                        </div>
+                      ))}
+                      {!latestAudit.length ? <p className="chart-empty">Nenhum evento de auditoria encontrado.</p> : null}
+                    </div>
+                  </ChartPanel>
+                </section>
+
+                <article className="panel">
+                  <div className="panel-header">
+                    <div><h2>Vínculos operacionais</h2><p>Navegue para os registros relacionados.</p></div>
+                    <Users size={20} aria-hidden="true" />
+                  </div>
+                  <div className="quick-actions-grid patient-actions-grid">
+                    {data.clinic ? (
+                      <Link className="quick-action-card" to={`/clinicas/${data.clinic.id}`}>
+                        <CalendarDays size={22} aria-hidden="true" />
+                        <div><strong>Clínica</strong><span>{data.clinic.name}</span></div>
+                      </Link>
+                    ) : null}
+                    {data.psychologist ? (
+                      <Link className="quick-action-card" to={`/usuarios/${data.psychologist.id}`}>
+                        <Users size={22} aria-hidden="true" />
+                        <div><strong>Psicólogo</strong><span>{data.psychologist.full_name}</span></div>
+                      </Link>
+                    ) : null}
+                  </div>
+                </article>
               </div>
-              <div className="quick-actions-grid patient-actions-grid">
-                {data.clinic ? (
-                  <Link className="quick-action-card" to={`/clinicas/${data.clinic.id}`}>
-                    <CalendarDays size={22} aria-hidden="true" />
-                    <div><strong>Clínica</strong><span>{data.clinic.name}</span></div>
-                  </Link>
-                ) : null}
-                {data.psychologist ? (
-                  <Link className="quick-action-card" to={`/usuarios/${data.psychologist.id}`}>
-                    <Users size={22} aria-hidden="true" />
-                    <div><strong>Psicólogo</strong><span>{data.psychologist.full_name}</span></div>
-                  </Link>
-                ) : null}
-              </div>
-            </article>
+            )}
           </>
         ) : null}
       </DataState>

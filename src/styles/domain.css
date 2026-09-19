@@ -3686,3 +3686,45 @@
     background: #fff;
   }
 }
+
+/* ── Patient detail tabs ─────────────────────────────────────────────────── */
+.patient-tab-bar {
+  display: flex;
+  gap: 2px;
+  border-bottom: 2px solid var(--border-subtle);
+  margin-bottom: var(--space-5);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.patient-tab-bar::-webkit-scrollbar { display: none; }
+
+.patient-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--text-supporting);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  margin-bottom: -2px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  transition: color var(--duration-fast), border-color var(--duration-fast), background var(--duration-fast);
+}
+.patient-tab-btn:hover {
+  color: var(--text-primary);
+  background: var(--surface-secondary);
+}
+.patient-tab-btn.active {
+  color: var(--color-brand-navy);
+  border-bottom-color: var(--color-brand-navy);
+  font-weight: var(--weight-semibold);
+}
+.patient-tab-btn svg { opacity: 0.7; }
+.patient-tab-btn.active svg { opacity: 1; }
+
+.patient-tab-panel { display: flex; flex-direction: column; gap: var(--space-5); }

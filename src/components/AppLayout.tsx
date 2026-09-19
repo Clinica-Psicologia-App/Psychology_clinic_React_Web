@@ -254,6 +254,7 @@ export function AppLayout() {
   const routeLabel = getRouteLabel(location.pathname)
   const navGroups = buildNavGroups(profile)
   const canSearch = profile?.role === 'admin' || profile?.role === 'psychologist'
+  const filteredNavGroups = navGroups
     .map((group) => ({
       ...group,
       items: group.items.filter((item) => isFeatureEnabled(item.feature)),
@@ -282,7 +283,7 @@ export function AppLayout() {
         </div>
 
         <nav className="sidebar-nav" aria-label="Navegação principal">
-          {navGroups.map((group) => (
+          {filteredNavGroups.map((group) => (
             <div key={group.label}>
               <span className="nav-group-label">{group.label}</span>
               <div className="nav-list">
