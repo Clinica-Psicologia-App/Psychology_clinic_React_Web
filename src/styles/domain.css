@@ -3559,12 +3559,13 @@
 .life-areas-list { display: flex; flex-direction: column; gap: var(--space-3); }
 .life-area-row { display: grid; grid-template-columns: 160px 1fr; gap: var(--space-3); align-items: start; }
 .life-area-label { font-size: var(--text-supporting); font-weight: 500; color: var(--text-body); padding-top: 2px; }
-.life-area-bars { display: flex; flex-direction: column; gap: 4px; }
+.life-area-bars { display: flex; flex-direction: column; gap: 5px; }
 .life-area-bar-wrap { display: flex; align-items: center; gap: var(--space-2); }
-.life-area-bar-wrap span { font-size: 11px; color: var(--text-muted); min-width: 16px; }
-.life-area-bar { height: 8px; border-radius: 4px; min-width: 4px; transition: width .3s; }
-.life-area-bar.satisfaction { background: var(--color-brand-accent); }
-.life-area-bar.suffering { background: var(--warning); }
+.life-area-bar-wrap span { font-size: 10px; font-weight: 700; color: var(--text-muted); min-width: 14px; text-align: right; }
+.life-area-bar-track { flex: 1; height: 8px; background: var(--surface-secondary); border-radius: 99px; overflow: hidden; }
+.life-area-bar { height: 100%; border-radius: 99px; min-width: 4px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+.life-area-bar.satisfaction { background: linear-gradient(90deg, #0d9488, #2dd4bf); }
+.life-area-bar.suffering { background: linear-gradient(90deg, #ea580c, #fb923c); }
 .life-area-note { grid-column: 1 / -1; font-size: var(--text-caption); color: var(--text-secondary); margin: 0; padding-left: 164px; }
 
 /* ── Contexto familiar ────────────────────────────────────────────────────── */

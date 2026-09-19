@@ -6,7 +6,6 @@
  */
 import { useQuery } from '@tanstack/react-query'
 import { Activity, Brain, ClipboardList, Heart, RefreshCw } from 'lucide-react'
-import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { EmptyState } from '../design-system/EmptyState'
 import {
   getPatientClinicalImpressions,
@@ -40,23 +39,212 @@ const LIFE_AREA_LABELS: Record<string, string> = {
   finances: 'Finanças',
 }
 
+// ── Radar animado (Radar E — linha se desenha ao entrar) ─────────────────────
+function AnimatedRadarChart({ areas }: { areas: PatientLifeAreaRow[] }) {
+  const cx = 150, cy = 150, maxR = 105, maxScore = 10
+  const n = areas.length
+  if (n < 3) return null
+
+  const angle = (i: number) => (i / n) * 2 * Math.PI - Math.PI / 2
+
+  const pt = (score: number, i: number) => ({
+    x: cx + (score / maxScore) * maxR * Math.cos(angle(i)),
+    y: cy + (score / maxScore) * maxR * Math.sin(angle(i)),
+  })
+
+  const labelPt = (i: number) => ({
+    x: cx + (maxR + 24) * Math.cos(angle(i)),
+    y: cy + (maxR + 24) * Math.sin(angle(i)),
+  })
+
+  const poly = (scores: number[]) =>
+    scores.map((s, i) => { const p = pt(s, i); return `${p.x.toFixed(1)},${p.y.toFixed(1)}` }).join(' ')
+
+  const perim = (scores: number[]) => {
+    const pts = scores.map((s, i) => pt(s, i))
+    let len = 0
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i], b = pts[(i + 1) % pts.length]
+      len += Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
+    }
+    return Math.ceil(len) + 60
+  }
+
+  const satScores = areas.map(a => a.score ?? 0)
+  const sofScores = areas.map(a => a.suffering ?? 0)
+  const satP = perim(satScores)
+
+  const rings = [2, 4, 6, 8, 10]
+
+  const textAnchor = (i: number): 'start' | 'end' | 'middle' => {
+    const c = Math.cos(angle(i))
+    if (c > 0.3) return 'start'
+    if (c < -0.3) return 'end'
+    return 'middle'
+  }
+
+  const splitLabel = (label: string): string[] => {
+    if (label.length <= 10) return [label]
+    const slash = label.indexOf('/')
+    if (slash > 0) return [label.slice(0, slash).trim(), label.slice(slash).trim()]
+    const mid = label.lastIndexOf(' ', Math.ceil(label.length / 2) + 4)
+    if (mid > 0) return [label.slice(0, mid), label.slice(mid + 1)]
+    return [label]
+  }
+
+  return (
+    <div className="life-areas-radar" style={{ padding: 0 }}>
+      <style>{`
+        @keyframes radar-draw-sat { to { stroke-dashoffset: 0; } }
+        @keyframes radar-fade-sof { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes radar-dot-pop  { from { r: 0; opacity: 0; } to { r: 4.5; opacity: 1; } }
+        .radar-sat-poly {
+          fill: rgba(13,148,136,0.12);
+          stroke: #0d9488;
+          stroke-width: 2.5;
+          stroke-linejoin: round;
+          stroke-dasharray: ${satP};
+          stroke-dashoffset: ${satP};
+          animation: radar-draw-sat 1.4s cubic-bezier(.4,0,.2,1) .2s forwards;
+        }
+        .radar-sof-poly {
+          fill: rgba(249,115,22,0.07);
+          stroke: #f97316;
+          stroke-width: 1.8;
+          stroke-linejoin: round;
+          stroke-dasharray: 5 3;
+          opacity: 0;
+          animation: radar-fade-sof .9s ease .7s forwards;
+        }
+        .radar-vertex {
+          fill: #fff;
+          stroke: #0d9488;
+          stroke-width: 2;
+          animation: radar-dot-pop .3s cubic-bezier(.34,1.56,.64,1) both;
+        }
+      `}</style>
+
+      <svg
+        viewBox="0 0 300 300"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ width: '100%', maxWidth: 360, display: 'block', margin: '0 auto' }}
+        aria-label="Gráfico radar de áreas de vida"
+        role="img"
+      >
+        {/* Rings */}
+        {rings.map(v => (
+          <polygon
+            key={v}
+            points={areas.map((_, i) => {
+              const r = (v / maxScore) * maxR
+              return `${(cx + r * Math.cos(angle(i))).toFixed(1)},${(cy + r * Math.sin(angle(i))).toFixed(1)}`
+            }).join(' ')}
+            fill={v === 10 ? '#fafafa' : 'none'}
+            stroke="#f0f0f0"
+            strokeWidth="1"
+          />
+        ))}
+
+        {/* Axis lines */}
+        {areas.map((_, i) => (
+          <line
+            key={i}
+            x1={cx} y1={cy}
+            x2={(cx + maxR * Math.cos(angle(i))).toFixed(1)}
+            y2={(cy + maxR * Math.sin(angle(i))).toFixed(1)}
+            stroke="#ebebeb"
+            strokeWidth="1"
+          />
+        ))}
+
+        {/* Sofrimento — fades in */}
+        <polygon className="radar-sof-poly" points={poly(sofScores)} />
+
+        {/* Satisfação — draws on */}
+        <polygon className="radar-sat-poly" points={poly(satScores)} />
+
+        {/* Vertex dots */}
+        {areas.map((a, i) => {
+          const p = pt(a.score ?? 0, i)
+          return (
+            <circle
+              key={i}
+              className="radar-vertex"
+              cx={p.x.toFixed(1)}
+              cy={p.y.toFixed(1)}
+              style={{ animationDelay: `${1.3 + i * 0.06}s` }}
+            />
+          )
+        })}
+
+        {/* Labels */}
+        {areas.map((a, i) => {
+          const lp = labelPt(i)
+          const label = LIFE_AREA_LABELS[a.area_key] ?? a.area_key
+          const lines = splitLabel(label)
+          const ta = textAnchor(i)
+          const lineH = 11
+          const baseY = lines.length > 1 ? lp.y - lineH / 2 : lp.y + 3
+          return (
+            <text
+              key={i}
+              textAnchor={ta}
+              fontSize="9"
+              fill="#6b7280"
+              fontWeight="600"
+              fontFamily="-apple-system, BlinkMacSystemFont, sans-serif"
+            >
+              {lines.map((line, li) => (
+                <tspan key={li} x={lp.x.toFixed(1)} y={(baseY + li * lineH).toFixed(1)}>
+                  {line}
+                </tspan>
+              ))}
+            </text>
+          )
+        })}
+      </svg>
+
+      {/* Legend */}
+      <div className="life-area-legend">
+        <span>
+          <svg width="20" height="4" style={{ marginRight: 4, verticalAlign: 'middle' }}>
+            <rect width="20" height="4" rx="2" fill="#0d9488" />
+          </svg>
+          Satisfação
+        </span>
+        <span>
+          <svg width="20" height="4" style={{ marginRight: 4, verticalAlign: 'middle' }}>
+            <line x1="0" y1="2" x2="20" y2="2" stroke="#f97316" strokeWidth="2" strokeDasharray="4 2" />
+          </svg>
+          Sofrimento
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// ── Barra dupla refinada (Opção B) ───────────────────────────────────────────
 function LifeAreaBar({ area, clinicalNote }: { area: PatientLifeAreaRow; clinicalNote?: string | null }) {
   const label = LIFE_AREA_LABELS[area.area_key] ?? area.area_key
   const score = area.score ?? 0
   const suffering = area.suffering ?? 0
-  const pct = Math.round((score / 10) * 100)
-  const sufPct = Math.round((suffering / 10) * 100)
+  const pct = (score / 10) * 100
+  const sufPct = (suffering / 10) * 100
 
   return (
     <div className="life-area-row">
       <span className="life-area-label">{label}</span>
       <div className="life-area-bars">
         <div className="life-area-bar-wrap" title={`Satisfação: ${score}/10`}>
-          <div className="life-area-bar satisfaction" style={{ width: `${pct}%` }} />
+          <div className="life-area-bar-track">
+            <div className="life-area-bar satisfaction" style={{ width: `${pct}%` }} />
+          </div>
           <span>{score}</span>
         </div>
         <div className="life-area-bar-wrap" title={`Sofrimento: ${suffering}/10`}>
-          <div className="life-area-bar suffering" style={{ width: `${sufPct}%` }} />
+          <div className="life-area-bar-track">
+            <div className="life-area-bar suffering" style={{ width: `${sufPct}%` }} />
+          </div>
           <span>{suffering}</span>
         </div>
       </div>
@@ -149,27 +337,8 @@ export function PatientInitialAssessmentPanel({ data }: { data: PatientDetailDat
             <section className="assessment-block">
               <h3><Activity size={15} /> Áreas de vida</h3>
 
-              {/* Radar chart */}
-              <div className="life-areas-radar">
-                <ResponsiveContainer width="100%" height={280}>
-                  <RadarChart data={lifeAreas.data!.map((a) => ({
-                    area: LIFE_AREA_LABELS[a.area_key] ?? a.area_key,
-                    Satisfação: a.score ?? 0,
-                    Sofrimento: a.suffering ?? 0,
-                  }))}>
-                    <PolarGrid stroke="var(--border-subtle)" />
-                    <PolarAngleAxis dataKey="area" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
-                    <Radar name="Satisfação" dataKey="Satisfação" stroke="var(--color-brand-accent)" fill="var(--color-brand-accent)" fillOpacity={0.2} />
-                    <Radar name="Sofrimento" dataKey="Sofrimento" stroke="#F59E0B" fill="#F59E0B" fillOpacity={0.15} />
-                    <Tooltip contentStyle={{ background: 'var(--surface-primary)', border: '1px solid var(--border-subtle)', borderRadius: 8, fontSize: 12 }} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
+              <AnimatedRadarChart areas={lifeAreas.data!} />
 
-              <div className="life-area-legend">
-                <span><span className="legend-dot satisfaction" /> Satisfação</span>
-                <span><span className="legend-dot suffering" /> Sofrimento</span>
-              </div>
               <div className="life-areas-list">
                 {lifeAreas.data!.map((a) => <LifeAreaBar key={a.area_key} area={a} clinicalNote={notesByArea[a.area_key]} />)}
               </div>
