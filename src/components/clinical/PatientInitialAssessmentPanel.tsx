@@ -19,8 +19,18 @@ import type { PatientDetailData, PatientLifeAreaNoteRow, PatientLifeAreaRow } fr
 
 // ── Rótulos das áreas de vida (mesmas chaves do Flutter) ─────────────────────
 const LIFE_AREA_LABELS: Record<string, string> = {
-  work: 'Trabalho / Estudo',
+  // chaves reais do Flutter
+  work_career: 'Trabalho / Carreira',
+  love_romance: 'Relacionamento afetivo',
+  friends: 'Amizades',
+  alone_time: 'Tempo para si',
+  physical_health: 'Saúde física',
+  emotional_health: 'Saúde emocional',
+  self_care: 'Autocuidado',
+  routine_organization: 'Rotina e organização',
   family: 'Família',
+  // chaves alternativas
+  work: 'Trabalho / Estudo',
   romantic: 'Relacionamento afetivo',
   social: 'Vida social',
   health: 'Saúde e bem-estar',
