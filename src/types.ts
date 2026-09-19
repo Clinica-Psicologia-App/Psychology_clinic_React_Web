@@ -711,6 +711,11 @@ export type TimelineEventNoteRow = {
   clinical_comment?: string | null
 }
 
+export type TimelineEventPersonRow = {
+  event_id: string
+  person_id: string
+}
+
 export type GenogramPersonNoteRow = {
   person_id: string
   clinical_comment?: string | null

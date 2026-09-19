@@ -5,7 +5,7 @@ import { Badge } from '../design-system/Badge'
 import { Button } from '../design-system/Button'
 import { EmptyState } from '../design-system/EmptyState'
 import { formatDate } from '../../lib/format'
-import { createPatientTimelineEvent, deletePatientTimelineEvent, listTimelineEventNotes, updatePatientTimelineEvent } from '../../services/supabaseQueries'
+import { createPatientTimelineEvent, deletePatientTimelineEvent, getPatientGenogram, listTimelineEventNotes, listTimelineEventPeople, updatePatientTimelineEvent } from '../../services/supabaseQueries'
 import type { PatientDetailData, PatientTimelineEventRow } from '../../types'
 
 type TimelineForm = {
@@ -66,6 +66,19 @@ export function PatientTimelineManager({ data, onChanged }: {
     queryFn: () => listTimelineEventNotes(data.patient.id),
   })
 
+  const genogram = useQuery({
+    queryKey: ['patient-genogram', data.patient.id],
+    queryFn: () => getPatientGenogram(data.patient.id),
+  })
+
+  const eventIds = useMemo(() => visibleEvents.map((e) => e.id), [visibleEvents])
+
+  const eventPeople = useQuery({
+    queryKey: ['timeline-event-people', eventIds],
+    queryFn: () => listTimelineEventPeople(eventIds),
+    enabled: eventIds.length > 0,
+  })
+
   const notesByEvent = useMemo(() => {
     const map = new Map<string, string>()
     for (const n of eventNotes.data ?? []) {
@@ -73,6 +86,27 @@ export function PatientTimelineManager({ data, onChanged }: {
     }
     return map
   }, [eventNotes.data])
+
+  const personNamesById = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const p of genogram.data?.persons ?? []) {
+      map.set(p.id, p.nickname || p.full_name)
+    }
+    return map
+  }, [genogram.data?.persons])
+
+  const peopleByEvent = useMemo(() => {
+    const map = new Map<string, string[]>()
+    for (const ep of eventPeople.data ?? []) {
+      const name = personNamesById.get(ep.person_id)
+      if (name) {
+        const list = map.get(ep.event_id) ?? []
+        list.push(name)
+        map.set(ep.event_id, list)
+      }
+    }
+    return map
+  }, [eventPeople.data, personNamesById])
 
   const saveMutation = useMutation({
     mutationFn: (input: TimelineForm) => {
@@ -145,6 +179,13 @@ export function PatientTimelineManager({ data, onChanged }: {
                   <span>Impacto {event.emotional_impact ?? '—'}/10</span>
                   {event.is_sensitive ? <span><LockKeyhole size={13} aria-hidden="true" /> Conteúdo sensível</span> : null}
                 </div>
+                {(peopleByEvent.get(event.id) ?? []).length > 0 ? (
+                  <div style={{ padding: 'var(--space-2) 0 0', display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)' }}>
+                    {peopleByEvent.get(event.id)!.map((name) => (
+                      <Badge key={name} tone="neutral">{name}</Badge>
+                    ))}
+                  </div>
+                ) : null}
                 {notesByEvent.get(event.id) ? (
                   <p style={{ margin: '0', padding: 'var(--space-2) 0 0', fontSize: 'var(--text-supporting)', color: 'var(--color-brand-navy)', display: 'flex', gap: 'var(--space-1)', alignItems: 'flex-start' }}>
                     <MessageSquare size={13} style={{ flexShrink: 0, marginTop: 2 }} />

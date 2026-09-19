@@ -1,5 +1,5 @@
 ﻿import { getSupabase } from '../lib/supabase'
-import type { AdminProfile, AuditData, CaseConceptualizationRow, ClinicalHypothesisRow, Clinic, ClinicDetailData, ClinicalAlertSeverity, ClinicalReportIncludeOptions, ClinicalReportPdfResult, ClinicFeatureEntitlement, CreatedPatientInvitation, DashboardData, GenogramData, GenogramFamilyPatternsRow, GenogramPersonNoteRow, GenogramPersonRow, GenogramRelationshipRow, LibraryIndicationRow, LibraryWorkLayer, LibraryWorkRow, Patient, PatientClinicalImpressionsRow, PatientClinicalIntakeRow, PatientDataCompletionRow, PatientDetailData, PatientFamilyContextRow, PatientIntakeRow, PatientInvitation, PatientLifeAreaNoteRow, PatientLifeAreaRow, PatientOverviewData, PatientPortalQuestionnaireAssignment, PatientPortalResultsData, PatientTimelineEventRow, PersonalityAssessmentRow, PersonalityClinicalSynthesis, PersonalityConceptualizationIntegration, PersonalityResults, PlansData, ProfileRole, PsychoeducationCard, PsychoeducationModuleRow, PsychologistAlertKind, PsychologistAlertRow, PsychologistDetailData, QuestionnaireCatalogItem, QuestionnaireAccessRow, QuestionnaireDetail, QuestionnaireQuestion, QuestionnaireSessionData, ReportsData, SchemaActivationRow, SettingsData, TherapyResourceRow, TimelineEventNoteRow, UserProfile } from '../types'
+import type { AdminProfile, AuditData, CaseConceptualizationRow, ClinicalHypothesisRow, Clinic, ClinicDetailData, ClinicalAlertSeverity, ClinicalReportIncludeOptions, ClinicalReportPdfResult, ClinicFeatureEntitlement, CreatedPatientInvitation, DashboardData, GenogramData, GenogramFamilyPatternsRow, GenogramPersonNoteRow, GenogramPersonRow, GenogramRelationshipRow, LibraryIndicationRow, LibraryWorkLayer, LibraryWorkRow, Patient, PatientClinicalImpressionsRow, PatientClinicalIntakeRow, PatientDataCompletionRow, PatientDetailData, PatientFamilyContextRow, PatientIntakeRow, PatientInvitation, PatientLifeAreaNoteRow, PatientLifeAreaRow, PatientOverviewData, PatientPortalQuestionnaireAssignment, PatientPortalResultsData, PatientTimelineEventRow, PersonalityAssessmentRow, PersonalityClinicalSynthesis, PersonalityConceptualizationIntegration, PersonalityResults, PlansData, ProfileRole, PsychoeducationCard, PsychoeducationModuleRow, PsychologistAlertKind, PsychologistAlertRow, PsychologistDetailData, QuestionnaireCatalogItem, QuestionnaireAccessRow, QuestionnaireDetail, QuestionnaireQuestion, QuestionnaireSessionData, ReportsData, SchemaActivationRow, SettingsData, TherapyResourceRow, TimelineEventNoteRow, TimelineEventPersonRow, UserProfile } from '../types'
 
 function throwIfError(error: unknown) {
   if (error) throw error
@@ -2752,6 +2752,16 @@ export async function listTimelineEventNotes(patientId: string): Promise<Timelin
     .eq('patient_id', patientId)
   throwIfError(error)
   return (data ?? []) as TimelineEventNoteRow[]
+}
+
+export async function listTimelineEventPeople(eventIds: string[]): Promise<TimelineEventPersonRow[]> {
+  if (!eventIds.length) return []
+  const { data, error } = await getSupabase()
+    .from('timeline_event_people')
+    .select('event_id, person_id')
+    .in('event_id', eventIds)
+  throwIfError(error)
+  return (data ?? []) as TimelineEventPersonRow[]
 }
 
 export async function listGenogramPersonNotes(patientId: string): Promise<GenogramPersonNoteRow[]> {
