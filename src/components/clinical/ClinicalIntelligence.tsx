@@ -185,13 +185,23 @@ export function ClinicalIntelligence({ data, onChanged }: { data: PatientDetailD
         {activeTab === 'timeline' ? (
           <div className="clinical-view-stack">
             <div className="clinical-view-actions"><div><h3>Linha do tempo longitudinal</h3><p>Eventos de vida, avaliações e objetivos no mesmo contexto.</p></div><Button variant="secondary" size="sm" onClick={() => setEventForm({ title: '', description: '', event_date: '', category: 'processo_terapeutico', emotional_impact: '', is_sensitive: false })}>Adicionar evento</Button></div>
-          {unifiedTimeline.length ? <div className="clinical-timeline">{unifiedTimeline.slice(0, 18).map((item) => (
-            <article key={item.id}>
-              <div className="timeline-marker" />
-              <time>{dateLabel(item.date)}</time>
-              <div><div className="timeline-title"><strong>{item.title}</strong><Badge tone="neutral">{item.type}</Badge>{item.sensitive ? <LockKeyhole size={14} aria-label="Conteúdo sensível" /> : null}</div><p>{item.detail}</p>{item.impact != null ? <span className="impact-meter">Impacto emocional <i style={{ width: `${item.impact * 10}%` }} /></span> : null}</div>
-            </article>
-          ))}</div> : <EmptyState icon={CalendarClock} title="Linha do tempo ainda vazia" description="Eventos de vida, objetivos e avaliações aparecerão aqui em ordem cronológica." />}
+          {unifiedTimeline.length ? (
+            <div className="clinical-timeline-h">
+              <div className="timeline-h-track">
+                {unifiedTimeline.slice(0, 18).map((item, index) => (
+                  <article key={item.id} className={`timeline-h-event ${index % 2 === 0 ? 'ht-above' : 'ht-below'}`}>
+                    <div className="timeline-h-card">
+                      <div className="timeline-title"><strong>{item.title}</strong><Badge tone="neutral">{item.type}</Badge>{item.sensitive ? <LockKeyhole size={14} aria-label="Conteúdo sensível" /> : null}</div>
+                      <p>{item.detail}</p>
+                      {item.impact != null ? <span className="impact-meter">Impacto emocional <i style={{ width: `${item.impact * 10}%` }} /></span> : null}
+                    </div>
+                    <div className="timeline-h-node"><div className="timeline-h-dot" /></div>
+                    <time className="timeline-h-date">{dateLabel(item.date)}</time>
+                  </article>
+                ))}
+              </div>
+            </div>
+          ) : <EmptyState icon={CalendarClock} title="Linha do tempo ainda vazia" description="Eventos de vida, objetivos e avaliações aparecerão aqui em ordem cronológica." />}
           </div>
         ) : null}
 
