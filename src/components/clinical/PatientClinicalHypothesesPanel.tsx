@@ -14,11 +14,11 @@ const KIND_LABELS: Record<string, string> = {
   clinical_note: 'Nota clínica',
 }
 
-const KIND_TONES: Record<string, 'neutral' | 'blue' | 'violet' | 'warning' | 'error' | 'success'> = {
-  emotional_need: 'violet',
-  schema: 'error',
+const KIND_TONES: Record<string, 'neutral' | 'info' | 'clinical' | 'warning' | 'danger' | 'success'> = {
+  emotional_need: 'clinical',
+  schema: 'danger',
   mode: 'warning',
-  coping_style: 'blue',
+  coping_style: 'info',
   current_problem: 'neutral',
   clinical_note: 'neutral',
 }

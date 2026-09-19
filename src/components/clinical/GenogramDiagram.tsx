@@ -231,10 +231,6 @@ function StructuralConnectors({ rows, patientPos }: { rows: RowMeta[]; patientPo
 
   // Barra de irmãos (paciente + irmãos)
   if (peerRow) {
-    const siblings = [
-      ...peerRow.nodesBefore.filter((n) => isSibling(n.person)),
-      ...peerRow.nodesAfter.filter((n) => isSibling(n.person)),
-    ]
     // Sempre inclui o paciente na barra
     const barMembers = [
       ...peerRow.nodesBefore.filter((n) => isSibling(n.person)).map((n) => ({ x: n.x, r: SYMR })),

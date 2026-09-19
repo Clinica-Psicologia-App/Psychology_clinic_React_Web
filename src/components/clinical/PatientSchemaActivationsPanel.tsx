@@ -55,7 +55,7 @@ export function PatientSchemaActivationsPanel({ data }: { data: PatientDetailDat
               <div key={code} className="schema-activation-card">
                 <div className="schema-activation-header">
                   <span className="schema-name">{s.name}</span>
-                  <Badge tone={s.count >= 3 ? 'error' : s.count >= 2 ? 'warning' : 'neutral'}>
+                  <Badge tone={s.count >= 3 ? 'danger' : s.count >= 2 ? 'warning' : 'neutral'}>
                     {s.count}× ativado{s.count !== 1 ? 's' : ''}
                   </Badge>
                 </div>

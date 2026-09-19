@@ -35,12 +35,12 @@ function ratingLabel(r?: string | null) {
   return `${r} — ${labels[n] ?? ''}`
 }
 
-function ratingTone(r?: string | null): 'neutral' | 'info' | 'warning' | 'error' {
+function ratingTone(r?: string | null): 'neutral' | 'info' | 'warning' | 'danger' {
   if (!r || r === 'X') return 'neutral'
   const n = parseInt(r, 10)
   if (n <= 1) return 'info'
   if (n <= 3) return 'warning'
-  return 'error'
+  return 'danger'
 }
 
 function StarRating({ value, max = 5 }: { value?: number | null; max?: number }) {
