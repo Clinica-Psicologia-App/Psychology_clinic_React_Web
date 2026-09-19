@@ -44,17 +44,22 @@ const emptyPerson: PersonForm = {
 const emptyRelationship: RelationshipForm = {
   person_a_id: '',
   person_b_id: '',
-  relationship_type: 'parental',
+  relationship_type: 'close',
   notes: '',
 }
 
+// Tipos emocionais/vinculares — espelham os valores do Flutter
 const relationshipLabels: Record<string, string> = {
-  parental: 'Parental',
-  conjugal: 'Conjugal',
-  sibling: 'Irmãos',
-  conflict: 'Conflito',
-  close: 'Vínculo próximo',
-  distant: 'Distante',
+  close:            'Vínculo próximo',
+  distant:          'Distante',
+  conflict:         'Conflito',
+  close_and_conflict: 'Próximo e conflituoso',
+  ruptured:         'Rompido',
+  neutral:          'Neutro',
+  spouse:           'Cônjuge',
+  ex_spouse:        'Ex-cônjuge',
+  separation:       'Separados',
+  other:            'Outro',
 }
 
 function num(value: string) {
@@ -221,8 +226,10 @@ export function PatientGenogramManager({ data }: { data: PatientDetailData }) {
         viewMode === 'diagram' ? (
           <GenogramDiagram
             patientName={data.patient.full_name}
+            patientGender={data.patient.gender}
             persons={persons}
             relationships={relationships}
+            showBonds={relationships.length > 0}
             onNodeClick={(person) => setPersonForm(toForm(person))}
           />
         ) : (
@@ -285,10 +292,20 @@ export function PatientGenogramManager({ data }: { data: PatientDetailData }) {
               <label>Nome completo<input autoFocus value={personForm.full_name} onChange={(event) => setPersonForm({ ...personForm, full_name: event.target.value })} required /></label>
               <label>Apelido<input value={personForm.nickname} onChange={(event) => setPersonForm({ ...personForm, nickname: event.target.value })} /></label>
               <label>Relação com paciente<input value={personForm.relationship_to_patient} onChange={(event) => setPersonForm({ ...personForm, relationship_to_patient: event.target.value })} placeholder="Mãe, pai, irmã, avô..." /></label>
-              <label>Gênero<input value={personForm.gender} onChange={(event) => setPersonForm({ ...personForm, gender: event.target.value })} /></label>
+              <label>Gênero<select value={personForm.gender} onChange={(event) => setPersonForm({ ...personForm, gender: event.target.value })}>
+                <option value="">Não informado</option>
+                <option value="male">Masculino</option>
+                <option value="female">Feminino</option>
+                <option value="other">Outro</option>
+                <option value="unknown">Desconhecido</option>
+              </select></label>
               <label>Ano nascimento<input type="number" value={personForm.birth_year} onChange={(event) => setPersonForm({ ...personForm, birth_year: event.target.value })} /></label>
               <label>Ano falecimento<input type="number" value={personForm.death_year} onChange={(event) => setPersonForm({ ...personForm, death_year: event.target.value })} /></label>
-              <label>Papel de cuidador<input value={personForm.caregiver_role} onChange={(event) => setPersonForm({ ...personForm, caregiver_role: event.target.value })} /></label>
+              <label>Papel de cuidador<select value={personForm.caregiver_role} onChange={(event) => setPersonForm({ ...personForm, caregiver_role: event.target.value })}>
+                <option value="">Nenhum</option>
+                <option value="important">Cuidador principal</option>
+                <option value="partial">Cuidador parcial</option>
+              </select></label>
               <label className="span-two">Notas<textarea value={personForm.notes} onChange={(event) => setPersonForm({ ...personForm, notes: event.target.value })} /></label>
               <label className="check-row"><input type="checkbox" checked={personForm.is_deceased} onChange={(event) => setPersonForm({ ...personForm, is_deceased: event.target.checked })} /> Pessoa falecida</label>
               <label className="check-row"><input type="checkbox" checked={personForm.is_sensitive} onChange={(event) => setPersonForm({ ...personForm, is_sensitive: event.target.checked })} /> Conteúdo sensível</label>
