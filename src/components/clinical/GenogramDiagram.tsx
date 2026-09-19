@@ -19,7 +19,6 @@ const PAD_Y = 44
 const BAR_OFFSET = 26
 
 // ── Cores ────────────────────────────────────────────────────────────────────
-const C_NAVY   = '#1e293b'
 const C_TEAL   = '#0d9488'
 const C_LINE   = '#cbd5e1'
 const C_LABEL  = '#374151'
@@ -133,10 +132,6 @@ function buildLayout(persons: GenogramPersonRow[]): Layout {
 }
 
 // ── Caminhos SVG ──────────────────────────────────────────────────────────────
-function squarePath(cx: number, cy: number, r: number) {
-  return `M${cx - r},${cy - r} h${r * 2} v${r * 2} h${-r * 2}z`
-}
-
 function diamondPath(cx: number, cy: number, r: number) {
   return `M${cx},${cy - r} L${cx + r},${cy} L${cx},${cy + r} L${cx - r},${cy}z`
 }
