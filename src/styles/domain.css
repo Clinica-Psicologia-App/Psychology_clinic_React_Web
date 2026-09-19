@@ -3615,3 +3615,74 @@
   .schema-activations-grid { grid-template-columns: 1fr; }
   .mode-step { grid-template-columns: 1fr; gap: 2px; }
 }
+
+/* ── Completude clínica ────────────────────────────────────────────────────── */
+.completeness-progress-bar {
+  height: 6px;
+  background: var(--surface-secondary);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+}
+.completeness-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-brand-accent), var(--color-brand-navy));
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+.completeness-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-2) var(--space-4);
+}
+.completeness-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-supporting);
+}
+.completeness-item.done { color: var(--text-body); }
+.completeness-item.done svg { color: var(--success, #22c55e); }
+.completeness-item.missing { color: var(--text-muted); }
+.completeness-item.missing svg { color: var(--border-subtle); }
+
+/* ── Radar de áreas de vida ────────────────────────────────────────────────── */
+.life-areas-radar {
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-secondary);
+  padding: var(--space-3);
+}
+
+/* ── Impressão (@media print) ─────────────────────────────────────────────── */
+@media print {
+  .sidebar,
+  .workspace-topbar,
+  .table-actions,
+  .btn,
+  button,
+  .modal-backdrop,
+  .onboarding-tour,
+  .page-header-actions {
+    display: none !important;
+  }
+  .workspace-shell {
+    display: block !important;
+  }
+  .content-area {
+    padding: 0 !important;
+  }
+  .page-stack {
+    gap: 16px !important;
+  }
+  .panel {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
+  body {
+    font-size: 11pt;
+    color: #000;
+    background: #fff;
+  }
+}

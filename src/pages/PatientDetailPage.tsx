@@ -1,6 +1,6 @@
 ﻿import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, CalendarDays, ClipboardList, FileSearch, HeartPulse, LockKeyhole, Mail, Phone, Target, UserRoundCheck, Users } from 'lucide-react'
+import { ArrowLeft, CalendarDays, ClipboardList, FileSearch, HeartPulse, LockKeyhole, Mail, Phone, Printer, Target, UserRoundCheck, Users } from 'lucide-react'
 import { Button } from '../components/design-system/Button'
 import { MonthlyResponsesChart } from '../components/charts/MonthlyResponsesChart'
 import { Badge, ChartPanel, DataState, EmptyState, EntityHeader, PageHeader, StatCard, StatusBadge } from '../components/Ui'
@@ -24,6 +24,7 @@ import { PatientFamilyContextPanel } from '../components/clinical/PatientFamilyC
 import { PatientSchemaActivationsPanel } from '../components/clinical/PatientSchemaActivationsPanel'
 import { PatientCaseConceptualizationManager } from '../components/clinical/PatientCaseConceptualizationManager'
 import { PatientClinicalHypothesesPanel } from '../components/clinical/PatientClinicalHypothesesPanel'
+import { PatientCompletenessPanel } from '../components/clinical/PatientCompletenessPanel'
 import { PatientInfographicPanel } from '../components/clinical/PatientInfographicPanel'
 import { PatientPersonalityManager } from '../components/clinical/PatientPersonalityManager'
 import { PatientClinicalReportPanel } from '../components/clinical/PatientClinicalReportPanel'
@@ -113,9 +114,14 @@ export function PatientDetailPage() {
         title={data?.patient.full_name ?? 'Paciente'}
         description="Dados cadastrais, vínculo clínico, respostas e auditoria."
         action={
-          <Link to="/pacientes">
-            <Button variant="ghost"><ArrowLeft size={16} aria-hidden="true" /> Voltar para pacientes</Button>
-          </Link>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <Button variant="ghost" onClick={() => window.print()}>
+              <Printer size={16} aria-hidden="true" /> Imprimir prontuário
+            </Button>
+            <Link to="/pacientes">
+              <Button variant="ghost"><ArrowLeft size={16} aria-hidden="true" /> Voltar para pacientes</Button>
+            </Link>
+          </div>
         }
       />
 
@@ -147,6 +153,8 @@ export function PatientDetailPage() {
               <StatCard label="Check-ins" value={data.totals.checkIns} icon={HeartPulse} tone="violet" detail={`${data.totals.dailyMonitors} monitoramentos`} />
               <StatCard label="Auditoria" value={data.totals.auditEvents} icon={FileSearch} tone="navy" detail="Eventos relacionados" />
             </section>
+
+            <PatientCompletenessPanel data={data} />
 
             <PatientInfographicPanel data={data} />
 

@@ -6,6 +6,7 @@
  */
 import { useQuery } from '@tanstack/react-query'
 import { Activity, Brain, ClipboardList, Heart, RefreshCw } from 'lucide-react'
+import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { EmptyState } from '../design-system/EmptyState'
 import {
   getPatientClinicalImpressions,
@@ -137,6 +138,24 @@ export function PatientInitialAssessmentPanel({ data }: { data: PatientDetailDat
           {(lifeAreas.data ?? []).length > 0 && (
             <section className="assessment-block">
               <h3><Activity size={15} /> Áreas de vida</h3>
+
+              {/* Radar chart */}
+              <div className="life-areas-radar">
+                <ResponsiveContainer width="100%" height={280}>
+                  <RadarChart data={lifeAreas.data!.map((a) => ({
+                    area: LIFE_AREA_LABELS[a.area_key] ?? a.area_key,
+                    Satisfação: a.score ?? 0,
+                    Sofrimento: a.suffering ?? 0,
+                  }))}>
+                    <PolarGrid stroke="var(--border-subtle)" />
+                    <PolarAngleAxis dataKey="area" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+                    <Radar name="Satisfação" dataKey="Satisfação" stroke="var(--color-brand-accent)" fill="var(--color-brand-accent)" fillOpacity={0.2} />
+                    <Radar name="Sofrimento" dataKey="Sofrimento" stroke="#F59E0B" fill="#F59E0B" fillOpacity={0.15} />
+                    <Tooltip contentStyle={{ background: 'var(--surface-primary)', border: '1px solid var(--border-subtle)', borderRadius: 8, fontSize: 12 }} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+
               <div className="life-area-legend">
                 <span><span className="legend-dot satisfaction" /> Satisfação</span>
                 <span><span className="legend-dot suffering" /> Sofrimento</span>

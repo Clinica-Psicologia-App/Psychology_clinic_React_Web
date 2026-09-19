@@ -388,6 +388,18 @@ export async function deleteUser(profileId: string) {
   throwIfError(error)
 }
 
+export async function searchPatients(query: string): Promise<Patient[]> {
+  if (!query.trim()) return []
+  const { data, error } = await getSupabase()
+    .from('patients')
+    .select('id, full_name, email, is_active, clinic_id')
+    .ilike('full_name', `%${query.trim()}%`)
+    .eq('is_active', true)
+    .limit(8)
+  throwIfError(error)
+  return (data ?? []) as Patient[]
+}
+
 export async function listPatients(): Promise<Patient[]> {
   const { data, error } = await getSupabase()
     .from('patients')

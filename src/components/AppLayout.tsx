@@ -1,5 +1,5 @@
-﻿import { useState } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+﻿import { useEffect, useRef, useState } from 'react'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   Activity,
   BarChart3,
@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import clsx from 'clsx'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/auth'
 import { useEntitlements } from '../context/entitlements'
 import { Avatar } from './design-system/Avatar'
@@ -32,6 +33,7 @@ import esquemaCoreIcon from '../assets/esquema-core-icon.png'
 import { canAccessAdminPanel, isPlatformAdminScope } from '../lib/roleAccess'
 import { OnboardingTour } from './OnboardingTour'
 import { useOnboardingTour } from '../hooks/useOnboardingTour'
+import { searchPatients } from '../services/supabaseQueries'
 import type { AdminProfile } from '../types'
 
 type NavItem = {
@@ -168,6 +170,82 @@ function getRouteLabel(pathname: string) {
   return parent ? `Detalhe de ${routeLabels[parent].toLowerCase()}` : 'Painel'
 }
 
+function GlobalSearch() {
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const navigate = useNavigate()
+
+  const results = useQuery({
+    queryKey: ['patient-search', query],
+    queryFn: () => searchPatients(query),
+    enabled: query.length >= 2,
+  })
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        inputRef.current?.focus()
+        setOpen(true)
+      }
+      if (e.key === 'Escape') {
+        setOpen(false)
+        setQuery('')
+        inputRef.current?.blur()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  function pick(id: string) {
+    navigate(`/pacientes/${id}`)
+    setOpen(false)
+    setQuery('')
+    inputRef.current?.blur()
+  }
+
+  const list = results.data ?? []
+
+  return (
+    <div className="global-search" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false) }}>
+      <div className="global-search-input-wrap">
+        <Search size={14} aria-hidden="true" />
+        <input
+          ref={inputRef}
+          type="search"
+          placeholder="Buscar paciente…"
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
+          onFocus={() => setOpen(true)}
+          className="global-search-input"
+          aria-label="Buscar paciente"
+          aria-autocomplete="list"
+          autoComplete="off"
+        />
+        <kbd>⌘K</kbd>
+      </div>
+      {open && query.length >= 2 && (
+        <ul className="global-search-dropdown" role="listbox">
+          {results.isLoading ? (
+            <li className="global-search-empty">Buscando…</li>
+          ) : list.length ? list.map((p) => (
+            <li key={p.id} role="option" aria-selected="false">
+              <button type="button" className="global-search-item" onMouseDown={() => pick(p.id)}>
+                <strong>{p.full_name}</strong>
+                <span>{p.email ?? ''}</span>
+              </button>
+            </li>
+          )) : (
+            <li className="global-search-empty">Nenhum paciente encontrado.</li>
+          )}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 export function AppLayout() {
   const { profile, signOut } = useAuth()
   const { isFeatureEnabled } = useEntitlements()
@@ -175,6 +253,7 @@ export function AppLayout() {
   const location = useLocation()
   const routeLabel = getRouteLabel(location.pathname)
   const navGroups = buildNavGroups(profile)
+  const canSearch = profile?.role === 'admin' || profile?.role === 'psychologist'
     .map((group) => ({
       ...group,
       items: group.items.filter((item) => isFeatureEnabled(item.feature)),
@@ -265,10 +344,7 @@ export function AppLayout() {
               <i aria-hidden="true" />
               Operação online
             </div>
-            <div className="workspace-search-hint" aria-hidden="true">
-              <Search size={15} />
-              <span>Navegue pelo menu</span>
-            </div>
+            {canSearch ? <GlobalSearch /> : null}
             <Avatar identity={profile} size="sm" className="workspace-avatar" title={profile?.full_name ?? 'Administrador'} />
           </div>
         </header>
