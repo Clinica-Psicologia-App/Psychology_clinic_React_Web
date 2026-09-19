@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { GitBranch, LayoutList, Network, LockKeyhole, Trash2, UserRoundPlus, UsersRound } from 'lucide-react'
+import { GitBranch, LayoutList, MessageSquare, Network, LockKeyhole, Trash2, UserRoundPlus, UsersRound } from 'lucide-react'
 import { Button } from '../design-system/Button'
 import { EmptyState } from '../design-system/EmptyState'
 import { GenogramDiagram } from './GenogramDiagram'
-import { deleteGenogramPerson, deleteGenogramRelationship, getPatientGenogram, saveGenogramPerson, saveGenogramRelationship } from '../../services/supabaseQueries'
+import { deleteGenogramPerson, deleteGenogramRelationship, getPatientGenogram, listGenogramPersonNotes, saveGenogramPerson, saveGenogramRelationship } from '../../services/supabaseQueries'
 import type { GenogramPersonRow, GenogramRelationshipRow, PatientDetailData } from '../../types'
 
 type PersonForm = {
@@ -17,8 +17,6 @@ type PersonForm = {
   death_year: string
   is_deceased: boolean
   caregiver_role: string
-  illness_type: string
-  pregnancy_loss_type: string
   notes: string
   is_sensitive: boolean
 }
@@ -39,8 +37,6 @@ const emptyPerson: PersonForm = {
   death_year: '',
   is_deceased: false,
   caregiver_role: '',
-  illness_type: '',
-  pregnancy_loss_type: '',
   notes: '',
   is_sensitive: false,
 }
@@ -78,8 +74,6 @@ function toForm(person: GenogramPersonRow): PersonForm {
     death_year: person.death_year == null ? '' : String(person.death_year),
     is_deceased: Boolean(person.is_deceased),
     caregiver_role: person.caregiver_role ?? '',
-    illness_type: person.illness_type ?? '',
-    pregnancy_loss_type: person.pregnancy_loss_type ?? '',
     notes: person.notes ?? '',
     is_sensitive: Boolean(person.is_sensitive),
   }
@@ -103,6 +97,19 @@ export function PatientGenogramManager({ data }: { data: PatientDetailData }) {
     queryKey: ['patient-genogram', data.patient.id],
     queryFn: () => getPatientGenogram(data.patient.id),
   })
+
+  const personNotes = useQuery({
+    queryKey: ['genogram-person-notes', data.patient.id],
+    queryFn: () => listGenogramPersonNotes(data.patient.id),
+  })
+
+  const notesByPerson = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const n of personNotes.data ?? []) {
+      if (n.clinical_comment) map.set(n.person_id, n.clinical_comment)
+    }
+    return map
+  }, [personNotes.data])
 
   const persons = useMemo(() => genogram.data?.persons ?? [], [genogram.data?.persons])
   const relationships = useMemo(() => genogram.data?.relationships ?? [], [genogram.data?.relationships])
@@ -133,8 +140,6 @@ export function PatientGenogramManager({ data }: { data: PatientDetailData }) {
       death_year: num(input.death_year),
       is_deceased: input.is_deceased,
       caregiver_role: input.caregiver_role,
-      illness_type: input.illness_type,
-      pregnancy_loss_type: input.pregnancy_loss_type,
       notes: input.notes,
       is_sensitive: input.is_sensitive,
     }),
@@ -235,6 +240,11 @@ export function PatientGenogramManager({ data }: { data: PatientDetailData }) {
                     <button type="button" key={person.id} className="genogram-person-node" onClick={() => setPersonForm(toForm(person))}>
                       <strong>{person.nickname || person.full_name}</strong>
                       <span>{person.full_name}</span>
+                      {notesByPerson.get(person.id) ? (
+                        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-brand-navy)', display: 'flex', gap: 4, alignItems: 'center' }}>
+                          <MessageSquare size={11} /> {notesByPerson.get(person.id)}
+                        </span>
+                      ) : null}
                       {person.is_sensitive ? <LockKeyhole size={13} aria-label="Sensível" /> : null}
                     </button>
                   ))}
@@ -279,8 +289,6 @@ export function PatientGenogramManager({ data }: { data: PatientDetailData }) {
               <label>Ano nascimento<input type="number" value={personForm.birth_year} onChange={(event) => setPersonForm({ ...personForm, birth_year: event.target.value })} /></label>
               <label>Ano falecimento<input type="number" value={personForm.death_year} onChange={(event) => setPersonForm({ ...personForm, death_year: event.target.value })} /></label>
               <label>Papel de cuidador<input value={personForm.caregiver_role} onChange={(event) => setPersonForm({ ...personForm, caregiver_role: event.target.value })} /></label>
-              <label>Adoecimento relevante<input value={personForm.illness_type} onChange={(event) => setPersonForm({ ...personForm, illness_type: event.target.value })} /></label>
-              <label className="span-two">Perda gestacional<input value={personForm.pregnancy_loss_type} onChange={(event) => setPersonForm({ ...personForm, pregnancy_loss_type: event.target.value })} /></label>
               <label className="span-two">Notas<textarea value={personForm.notes} onChange={(event) => setPersonForm({ ...personForm, notes: event.target.value })} /></label>
               <label className="check-row"><input type="checkbox" checked={personForm.is_deceased} onChange={(event) => setPersonForm({ ...personForm, is_deceased: event.target.checked })} /> Pessoa falecida</label>
               <label className="check-row"><input type="checkbox" checked={personForm.is_sensitive} onChange={(event) => setPersonForm({ ...personForm, is_sensitive: event.target.checked })} /> Conteúdo sensível</label>

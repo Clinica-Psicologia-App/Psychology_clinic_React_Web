@@ -3541,3 +3541,77 @@
     padding: 24px 20px 18px;
   }
 }
+
+/* ── Avaliação inicial ─────────────────────────────────────────────────────── */
+.assessment-blocks { display: flex; flex-direction: column; gap: var(--space-6); }
+.assessment-block { border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: var(--space-5); }
+.assessment-block h3 { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-body); font-weight: 600; color: var(--color-brand-navy); margin-bottom: var(--space-4); }
+.assessment-field { margin-bottom: var(--space-3); }
+.assessment-field:last-child { margin-bottom: 0; }
+.assessment-field-label { display: block; font-size: var(--text-caption); font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: var(--space-1); }
+.assessment-field p { font-size: var(--text-supporting); color: var(--text-body); line-height: 1.55; margin: 0; }
+
+/* Áreas de vida */
+.life-area-legend { display: flex; gap: var(--space-4); margin-bottom: var(--space-4); font-size: var(--text-caption); color: var(--text-secondary); }
+.legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; }
+.legend-dot.satisfaction { background: var(--color-brand-accent); }
+.legend-dot.suffering { background: var(--warning); }
+.life-areas-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.life-area-row { display: grid; grid-template-columns: 160px 1fr; gap: var(--space-3); align-items: start; }
+.life-area-label { font-size: var(--text-supporting); font-weight: 500; color: var(--text-body); padding-top: 2px; }
+.life-area-bars { display: flex; flex-direction: column; gap: 4px; }
+.life-area-bar-wrap { display: flex; align-items: center; gap: var(--space-2); }
+.life-area-bar-wrap span { font-size: 11px; color: var(--text-muted); min-width: 16px; }
+.life-area-bar { height: 8px; border-radius: 4px; min-width: 4px; transition: width .3s; }
+.life-area-bar.satisfaction { background: var(--color-brand-accent); }
+.life-area-bar.suffering { background: var(--warning); }
+.life-area-note { grid-column: 1 / -1; font-size: var(--text-caption); color: var(--text-secondary); margin: 0; padding-left: 164px; }
+
+/* ── Contexto familiar ────────────────────────────────────────────────────── */
+.family-context-grid { display: flex; flex-direction: column; gap: var(--space-5); }
+.family-context-section h3 { font-size: var(--text-body); font-weight: 600; color: var(--color-brand-navy); margin-bottom: var(--space-3); }
+
+/* ── Esquemas ativados ────────────────────────────────────────────────────── */
+.schema-activations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-3); margin-bottom: var(--space-4); }
+.schema-activation-card { padding: var(--space-3) var(--space-4); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--surface-primary); }
+.schema-activation-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-1); }
+.schema-name { font-size: var(--text-supporting); font-weight: 600; color: var(--text-body); }
+.schema-code { font-size: var(--text-caption); color: var(--text-muted); display: block; margin-bottom: var(--space-2); }
+.schema-note { font-size: var(--text-caption); color: var(--text-secondary); margin: 0; line-height: 1.45; border-top: 1px solid var(--border-subtle); padding-top: var(--space-2); }
+.schema-history-details summary { font-size: var(--text-supporting); color: var(--text-muted); cursor: pointer; padding: var(--space-2) 0; }
+
+/* ── Conceitualização (novos estilos) ─────────────────────────────────────── */
+.conceptualization-section { margin-bottom: var(--space-6); }
+.conceptualization-section h3 { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-body); font-weight: 600; color: var(--color-brand-navy); margin-bottom: var(--space-4); padding-bottom: var(--space-2); border-bottom: 1px solid var(--border-subtle); }
+.needs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-3); }
+.need-card { padding: var(--space-3) var(--space-4); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--surface-primary); }
+.need-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-2); }
+.need-label { font-size: var(--text-supporting); font-weight: 600; color: var(--text-body); }
+.need-detail { font-size: var(--text-caption); color: var(--text-secondary); margin: var(--space-1) 0 0; }
+.mode-sequences { display: flex; flex-direction: column; gap: var(--space-4); }
+.mode-sequence-card { padding: var(--space-4); border: 1px solid var(--border-subtle); border-left: 3px solid var(--color-brand-accent); border-radius: 0 var(--radius-lg) var(--radius-lg) 0; background: var(--surface-primary); display: flex; flex-direction: column; gap: var(--space-2); }
+.mode-step { display: grid; grid-template-columns: 130px 1fr; gap: var(--space-2); font-size: var(--text-supporting); }
+.mode-step-label { font-weight: 600; color: var(--text-muted); font-size: var(--text-caption); text-transform: uppercase; letter-spacing: .04em; padding-top: 1px; }
+.relationship-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.rel-item { display: flex; flex-direction: column; gap: var(--space-1); }
+.rel-item.span-two { grid-column: 1 / -1; }
+.rel-label { font-size: var(--text-caption); font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.rel-item p { font-size: var(--text-supporting); color: var(--text-secondary); margin: 0; }
+.star-rating { display: inline-flex; align-items: center; font-size: 16px; }
+.impressions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.impression-card { padding: var(--space-3) var(--space-4); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--surface-primary); }
+.impression-label { font-size: var(--text-caption); font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: var(--space-2); }
+.impression-card p { font-size: var(--text-supporting); color: var(--text-body); margin: 0; line-height: 1.55; }
+.diagnosis-system { font-size: var(--text-caption); color: var(--text-muted); margin-bottom: var(--space-2); }
+.diagnosis-item { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-supporting); }
+.origin-block { margin-bottom: var(--space-4); }
+.origin-label { font-size: var(--text-caption); font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: var(--space-1); }
+.origin-block p { font-size: var(--text-supporting); color: var(--text-body); margin: 0; line-height: 1.55; }
+
+@media (max-width: 768px) {
+  .life-area-row { grid-template-columns: 1fr; }
+  .life-area-note { padding-left: 0; }
+  .relationship-grid, .impressions-grid { grid-template-columns: 1fr; }
+  .schema-activations-grid { grid-template-columns: 1fr; }
+  .mode-step { grid-template-columns: 1fr; gap: 2px; }
+}

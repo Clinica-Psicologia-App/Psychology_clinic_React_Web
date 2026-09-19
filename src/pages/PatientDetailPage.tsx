@@ -16,10 +16,14 @@ import { PatientGoalsManager } from '../components/clinical/PatientGoalsManager'
 import { PatientProblemsManager } from '../components/clinical/PatientProblemsManager'
 import { PatientTimelineManager } from '../components/clinical/PatientTimelineManager'
 import { PatientInitialAssessmentManager } from '../components/clinical/PatientInitialAssessmentManager'
+import { PatientInitialAssessmentPanel } from '../components/clinical/PatientInitialAssessmentPanel'
 import { PatientMentalMapSummary } from '../components/clinical/PatientMentalMapSummary'
 import { PatientLibraryManager } from '../components/clinical/PatientLibraryManager'
 import { PatientGenogramManager } from '../components/clinical/PatientGenogramManager'
+import { PatientFamilyContextPanel } from '../components/clinical/PatientFamilyContextPanel'
+import { PatientSchemaActivationsPanel } from '../components/clinical/PatientSchemaActivationsPanel'
 import { PatientCaseConceptualizationManager } from '../components/clinical/PatientCaseConceptualizationManager'
+import { PatientClinicalHypothesesPanel } from '../components/clinical/PatientClinicalHypothesesPanel'
 import { PatientInfographicPanel } from '../components/clinical/PatientInfographicPanel'
 import { PatientPersonalityManager } from '../components/clinical/PatientPersonalityManager'
 import { PatientClinicalReportPanel } from '../components/clinical/PatientClinicalReportPanel'
@@ -152,11 +156,17 @@ export function PatientDetailPage() {
 
             <PatientInitialAssessmentManager data={data} onChanged={() => refetch()} />
 
+            <PatientInitialAssessmentPanel data={data} />
+
             <PatientMentalMapSummary data={data} />
 
             <PatientGenogramManager data={data} />
 
+            <PatientFamilyContextPanel data={data} />
+
             <PatientCaseConceptualizationManager data={data} />
+
+            <PatientClinicalHypothesesPanel data={data} />
 
             <PatientPersonalityManager data={data} />
 
@@ -173,6 +183,8 @@ export function PatientDetailPage() {
             <PatientResultsReleasePanel data={data} onChanged={() => refetch()} />
 
             <PatientResultsBreakdown data={data} />
+
+            <PatientSchemaActivationsPanel data={data} />
 
             <PatientMonitoringPanel data={data} />
 

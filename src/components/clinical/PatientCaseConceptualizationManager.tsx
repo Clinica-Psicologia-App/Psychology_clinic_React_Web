@@ -1,121 +1,253 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BrainCircuit, Edit3, ShieldCheck } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { Activity, BrainCircuit, Heart, Layers, RefreshCw, Stethoscope, TreePine, Users } from 'lucide-react'
 import { Badge } from '../design-system/Badge'
-import { Button } from '../design-system/Button'
 import { EmptyState } from '../design-system/EmptyState'
-import { getCaseConceptualization, saveCaseConceptualization } from '../../services/supabaseQueries'
-import type { CaseConceptualizationData, PatientDetailData } from '../../types'
+import { getCaseConceptualization } from '../../services/supabaseQueries'
+import type {
+  CaseDiagnosis,
+  CaseOrigins,
+  GeneralImpressions,
+  ModeSequence,
+  PatientDetailData,
+  TherapeuticRelationship,
+  UnmetNeed,
+} from '../../types'
 
-type ConceptualizationForm = {
-  id?: string | null
-  summary: string
-  core_schemas: string
-  modes: string
-  coping_strategies: string
-  emotional_needs: string
-  triggers: string
-  maintenance_cycles: string
-  protective_factors: string
-  therapy_focus: string
+// ── 9 necessidades essenciais (mesma ordem do app Flutter) ───────────────────
+const CORE_NEEDS: Record<string, string> = {
+  conexao: 'Conexão (afeto, aceitação, amor)',
+  expressao: 'Expressão de emoções e necessidades',
+  seguranca: 'Segurança e previsibilidade',
+  limites: 'Limites realistas e autocontrole',
+  espontaneidade: 'Espontaneidade e brincadeira',
+  competencia: 'Afirmação de competência (autonomia)',
+  autonomia_respeito: 'Respeito à autonomia',
+  valor: 'Valor intrínseco',
+  modelo: 'Modelo saudável (cuidador competente)',
 }
 
-function listFromText(value: string) {
-  return value
-    .split(/\n|,/)
-    .map((item) => item.trim())
-    .filter(Boolean)
+function ratingLabel(r?: string | null) {
+  if (!r) return null
+  if (r === 'X') return 'Info insuficiente'
+  const n = parseInt(r, 10)
+  if (isNaN(n)) return r
+  const labels = ['Não afetada', 'Muito leve', 'Leve', 'Moderada', 'Intensa', 'Muito intensa']
+  return `${r} — ${labels[n] ?? ''}`
 }
 
-function joinList(value?: string[] | null) {
-  return (value ?? []).join(', ')
+function ratingTone(r?: string | null): 'neutral' | 'info' | 'warning' | 'error' {
+  if (!r || r === 'X') return 'neutral'
+  const n = parseInt(r, 10)
+  if (n <= 1) return 'info'
+  if (n <= 3) return 'warning'
+  return 'error'
 }
 
-function toForm(id: string | null | undefined, data?: CaseConceptualizationData | null): ConceptualizationForm {
-  return {
-    id,
-    summary: data?.summary ?? '',
-    core_schemas: joinList(data?.core_schemas),
-    modes: joinList(data?.modes),
-    coping_strategies: joinList(data?.coping_strategies),
-    emotional_needs: joinList(data?.emotional_needs),
-    triggers: joinList(data?.triggers),
-    maintenance_cycles: joinList(data?.maintenance_cycles),
-    protective_factors: joinList(data?.protective_factors),
-    therapy_focus: data?.therapy_focus ?? '',
-  }
-}
-
-function toData(form: ConceptualizationForm): CaseConceptualizationData {
-  return {
-    summary: form.summary.trim() || null,
-    core_schemas: listFromText(form.core_schemas),
-    modes: listFromText(form.modes),
-    coping_strategies: listFromText(form.coping_strategies),
-    emotional_needs: listFromText(form.emotional_needs),
-    triggers: listFromText(form.triggers),
-    maintenance_cycles: listFromText(form.maintenance_cycles),
-    protective_factors: listFromText(form.protective_factors),
-    therapy_focus: form.therapy_focus.trim() || null,
-  }
-}
-
-function SignalList({ title, items, tone = 'neutral' }: { title: string; items?: string[] | null; tone?: 'neutral' | 'info' | 'warning' | 'success' }) {
+function StarRating({ value, max = 5 }: { value?: number | null; max?: number }) {
+  if (!value) return <span style={{ color: 'var(--text-muted)' }}>—</span>
   return (
-    <section>
-      <strong>{title}</strong>
-      {(items ?? []).length ? (
-        <div className="context-progress-list">
-          {(items ?? []).map((item) => <Badge key={`${title}-${item}`} tone={tone}>{item}</Badge>)}
-        </div>
-      ) : <p>Nada registrado.</p>}
+    <span className="star-rating">
+      {Array.from({ length: max }, (_, i) => (
+        <span key={i} style={{ color: i < value ? 'var(--warning)' : 'var(--border-subtle)' }}>★</span>
+      ))}
+      <span style={{ fontSize: 'var(--text-caption)', color: 'var(--text-muted)', marginLeft: 4 }}>{value}/{max}</span>
+    </span>
+  )
+}
+
+// ── Seções de visualização ────────────────────────────────────────────────────
+
+function NeedsSection({ needs }: { needs?: UnmetNeed[] | null }) {
+  const active = (needs ?? []).filter((n) => n.rating && n.rating !== '0')
+  if (!active.length) return null
+  return (
+    <section className="conceptualization-section">
+      <h3><Heart size={16} /> Necessidades não atendidas</h3>
+      <div className="needs-grid">
+        {active.map((n) => (
+          <div key={n.need_key} className="need-card">
+            <div className="need-header">
+              <span className="need-label">{CORE_NEEDS[n.need_key] ?? n.need_key}</span>
+              <Badge tone={ratingTone(n.rating)}>{ratingLabel(n.rating)}</Badge>
+            </div>
+            {n.schemas && <p className="need-detail"><strong>Esquemas:</strong> {n.schemas}</p>}
+            {n.origin && <p className="need-detail"><strong>Origem:</strong> {n.origin}</p>}
+          </div>
+        ))}
+      </div>
     </section>
   )
 }
 
+function ModesSection({ sequences }: { sequences?: ModeSequence[] | null }) {
+  const active = (sequences ?? []).filter((s) =>
+    s.trigger || s.activated_modes || s.coping_mode || s.sequence || s.effect,
+  )
+  if (!active.length) return null
+  return (
+    <section className="conceptualization-section">
+      <h3><Layers size={16} /> Sequências de modos</h3>
+      <div className="mode-sequences">
+        {active.map((s, i) => (
+          <div key={i} className="mode-sequence-card">
+            {s.trigger && (
+              <div className="mode-step">
+                <span className="mode-step-label">Gatilho</span>
+                <span>{s.trigger}</span>
+              </div>
+            )}
+            {s.activated_modes && (
+              <div className="mode-step">
+                <span className="mode-step-label">Modos ativados</span>
+                <span>{s.activated_modes}</span>
+              </div>
+            )}
+            {s.coping_mode && (
+              <div className="mode-step">
+                <span className="mode-step-label">Modo de coping</span>
+                <span>{s.coping_mode}</span>
+              </div>
+            )}
+            {s.sequence && (
+              <div className="mode-step">
+                <span className="mode-step-label">Sequência</span>
+                <span>{s.sequence}</span>
+              </div>
+            )}
+            {s.effect && (
+              <div className="mode-step">
+                <span className="mode-step-label">Efeito</span>
+                <span>{s.effect}</span>
+              </div>
+            )}
+            {s.perpetuation && (
+              <div className="mode-step">
+                <span className="mode-step-label">Perpetuação</span>
+                <span>{s.perpetuation}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function RelationshipSection({ rel }: { rel?: TherapeuticRelationship | null }) {
+  if (!rel || (!rel.collaboration_rating && !rel.bond_rating && !rel.therapist_reactions)) return null
+  return (
+    <section className="conceptualization-section">
+      <h3><Users size={16} /> Relação terapêutica</h3>
+      <div className="relationship-grid">
+        {rel.collaboration_rating != null && (
+          <div className="rel-item">
+            <span className="rel-label">Colaboração</span>
+            <StarRating value={rel.collaboration_rating} />
+            {rel.collaboration_notes && <p>{rel.collaboration_notes}</p>}
+          </div>
+        )}
+        {rel.bond_rating != null && (
+          <div className="rel-item">
+            <span className="rel-label">Vínculo</span>
+            <StarRating value={rel.bond_rating} />
+            {rel.bond_notes && <p>{rel.bond_notes}</p>}
+          </div>
+        )}
+        {rel.therapist_reactions && (
+          <div className="rel-item span-two">
+            <span className="rel-label">Reações do terapeuta</span>
+            <p>{rel.therapist_reactions}</p>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function ImpressionsSection({ impressions }: { impressions?: GeneralImpressions | null }) {
+  if (!impressions || (!impressions.initial && !impressions.current)) return null
+  return (
+    <section className="conceptualization-section">
+      <h3><Activity size={16} /> Impressões gerais</h3>
+      <div className="impressions-grid">
+        {impressions.initial && (
+          <div className="impression-card">
+            <span className="impression-label">Apresentação inicial</span>
+            <p>{impressions.initial}</p>
+          </div>
+        )}
+        {impressions.current && (
+          <div className="impression-card">
+            <span className="impression-label">Apresentação atual</span>
+            <p>{impressions.current}</p>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function DiagnosisSection({ diagnosis }: { diagnosis?: CaseDiagnosis | null }) {
+  if (!diagnosis || (!diagnosis.system && !diagnosis.items?.length)) return null
+  return (
+    <section className="conceptualization-section">
+      <h3><Stethoscope size={16} /> Diagnóstico</h3>
+      {diagnosis.system && <p className="diagnosis-system">{diagnosis.system}</p>}
+      {(diagnosis.items ?? []).filter((d) => d.name).map((d, i) => (
+        <div key={i} className="diagnosis-item">
+          <span>{d.name}</span>
+          {d.code && <Badge tone="neutral">{d.code}</Badge>}
+        </div>
+      ))}
+    </section>
+  )
+}
+
+function OriginsSection({ origins }: { origins?: CaseOrigins | null }) {
+  if (!origins || (!origins.early_history && !origins.temperament && !origins.cultural)) return null
+  return (
+    <section className="conceptualization-section">
+      <h3><TreePine size={16} /> Origens</h3>
+      {origins.early_history && (
+        <div className="origin-block">
+          <span className="origin-label">História inicial</span>
+          <p>{origins.early_history}</p>
+        </div>
+      )}
+      {origins.temperament && (
+        <div className="origin-block">
+          <span className="origin-label">Fatores temperamentais / biológicos</span>
+          <p>{origins.temperament}</p>
+        </div>
+      )}
+      {origins.cultural && (
+        <div className="origin-block">
+          <span className="origin-label">Fatores culturais, étnicos e religiosos</span>
+          <p>{origins.cultural}</p>
+        </div>
+      )}
+    </section>
+  )
+}
+
+// ── Componente principal ──────────────────────────────────────────────────────
 export function PatientCaseConceptualizationManager({ data }: { data: PatientDetailData }) {
-  const queryClient = useQueryClient()
-  const [form, setForm] = useState<ConceptualizationForm | null>(null)
   const conceptualization = useQuery({
     queryKey: ['case-conceptualization', data.patient.id],
     queryFn: () => getCaseConceptualization(data.patient.id),
   })
-  const clinicalData = conceptualization.data?.data ?? null
-  const hasContent = Boolean(
-    clinicalData?.summary ||
-    clinicalData?.therapy_focus ||
-    clinicalData?.core_schemas?.length ||
-    clinicalData?.modes?.length ||
-    clinicalData?.coping_strategies?.length,
+
+  const cc = conceptualization.data
+  const hasContent = cc && (
+    (cc.unmet_needs ?? []).some((n) => n.rating && n.rating !== '0') ||
+    (cc.mode_sequences ?? []).some((s) => s.trigger || s.activated_modes) ||
+    cc.therapeutic_relationship?.collaboration_rating != null ||
+    cc.general_impressions?.initial ||
+    cc.diagnosis?.items?.length ||
+    cc.origins?.early_history ||
+    cc.motivo_notes ||
+    cc.additional_comments
   )
-
-  const sourceHints = useMemo(() => {
-    const hints = [
-      data.problems.length ? `${data.problems.filter((problem) => problem.status === 'active').length} problemas ativos` : null,
-      data.goals.length ? `${data.goals.filter((goal) => goal.status === 'active').length} metas ativas` : null,
-      data.timelineEvents.length ? `${data.timelineEvents.length} eventos de timeline` : null,
-      data.checkIns.length ? `${data.checkIns.length} check-ins` : null,
-      data.patient.therapy_demands ? 'demandas iniciais preenchidas' : null,
-    ].filter(Boolean)
-    return hints as string[]
-  }, [data])
-
-  useEffect(() => {
-    if (!form || form.id || !conceptualization.data) return
-    setForm(toForm(conceptualization.data.id, conceptualization.data.data))
-  }, [conceptualization.data, form])
-
-  const mutation = useMutation({
-    mutationFn: (input: ConceptualizationForm) => saveCaseConceptualization({
-      id: input.id,
-      patient_id: data.patient.id,
-      data: toData(input),
-    }),
-    onSuccess: async () => {
-      setForm(null)
-      await queryClient.invalidateQueries({ queryKey: ['case-conceptualization', data.patient.id] })
-    },
-  })
 
   return (
     <article className="panel report-table-panel">
@@ -123,74 +255,52 @@ export function PatientCaseConceptualizationManager({ data }: { data: PatientDet
         <div>
           <span className="eyebrow">Módulos avançados</span>
           <h2>Conceitualização de caso</h2>
-          <p>Formulação em Terapia de Esquemas: esquemas, modos, coping, necessidades e foco terapêutico.</p>
+          <p>Formulação em Terapia de Esquemas: necessidades, modos, origens, diagnóstico e aliança terapêutica.</p>
         </div>
-        <Button variant="primary" size="sm" onClick={() => setForm(toForm(conceptualization.data?.id, conceptualization.data?.data))}>
-          <Edit3 size={16} aria-hidden="true" /> {hasContent ? 'Editar' : 'Criar'}
-        </Button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--text-muted)', fontSize: 'var(--text-caption)' }}>
+          <RefreshCw size={13} />
+          Preenchido no aplicativo
+        </div>
       </div>
 
-      {conceptualization.error || mutation.error ? (
-        <div className="form-step-error">{((conceptualization.error ?? mutation.error) as Error).message}</div>
+      {conceptualization.error ? (
+        <div className="form-step-error">{(conceptualization.error as Error).message}</div>
       ) : null}
 
-      {hasContent && clinicalData ? (
+      {hasContent && cc ? (
         <div className="conceptualization-board">
-          <section className="conceptualization-core">
-            <BrainCircuit size={24} aria-hidden="true" />
-            <strong>Síntese clínica</strong>
-            <p>{clinicalData.summary || 'Síntese ainda não preenchida.'}</p>
-            {clinicalData.therapy_focus ? <span>{clinicalData.therapy_focus}</span> : null}
-          </section>
-          <SignalList title="Esquemas nucleares" items={clinicalData.core_schemas} tone="warning" />
-          <SignalList title="Modos" items={clinicalData.modes} tone="info" />
-          <SignalList title="Coping" items={clinicalData.coping_strategies} />
-          <SignalList title="Necessidades emocionais" items={clinicalData.emotional_needs} tone="success" />
-          <SignalList title="Gatilhos" items={clinicalData.triggers} tone="warning" />
-          <SignalList title="Ciclos de manutenção" items={clinicalData.maintenance_cycles} />
-          <SignalList title="Fatores protetivos" items={clinicalData.protective_factors} tone="success" />
+          {(cc.motivo_notes || cc.additional_comments) && (
+            <section className="conceptualization-section conceptualization-core">
+              <BrainCircuit size={20} aria-hidden="true" />
+              {cc.motivo_notes && (
+                <>
+                  <strong>Motivo / queixa (terapeuta)</strong>
+                  <p>{cc.motivo_notes}</p>
+                </>
+              )}
+              {cc.additional_comments && (
+                <>
+                  <strong style={{ marginTop: cc.motivo_notes ? 'var(--space-3)' : undefined }}>Comentários adicionais</strong>
+                  <p>{cc.additional_comments}</p>
+                </>
+              )}
+            </section>
+          )}
+
+          <ImpressionsSection impressions={cc.general_impressions} />
+          <DiagnosisSection diagnosis={cc.diagnosis} />
+          <NeedsSection needs={cc.unmet_needs} />
+          <ModesSection sequences={cc.mode_sequences} />
+          <OriginsSection origins={cc.origins} />
+          <RelationshipSection rel={cc.therapeutic_relationship} />
         </div>
-      ) : (
+      ) : conceptualization.isLoading ? null : (
         <EmptyState
           icon={BrainCircuit}
           title="Conceitualização ainda vazia"
-          description="Estruture a formulação do caso conectando avaliação inicial, problemas, timeline, genograma e metas."
+          description="Preencha a conceitualização de caso no aplicativo. Os dados aparecerão aqui automaticamente."
         />
       )}
-
-      <div className="conceptualization-source">
-        <ShieldCheck size={18} aria-hidden="true" />
-        <div>
-          <strong>Fontes disponíveis para revisão</strong>
-          <span>{sourceHints.length ? sourceHints.join(' · ') : 'Ainda há poucos dados clínicos estruturados para apoiar a formulação.'}</span>
-        </div>
-      </div>
-
-      {form ? (
-        <div className="modal-backdrop" role="presentation" onClick={() => setForm(null)}>
-          <form className="modal-card wide-modal" onSubmit={(event) => { event.preventDefault(); mutation.mutate(form) }} onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true">
-            <header>
-              <h2>Conceitualização de caso</h2>
-              <p>Use uma linha por item ou separe por vírgulas nos campos de lista.</p>
-            </header>
-            <label>Síntese clínica<textarea autoFocus value={form.summary} onChange={(event) => setForm({ ...form, summary: event.target.value })} /></label>
-            <div className="form-grid two">
-              <label>Esquemas nucleares<textarea value={form.core_schemas} onChange={(event) => setForm({ ...form, core_schemas: event.target.value })} placeholder="Abandono, desconfiança..." /></label>
-              <label>Modos<textarea value={form.modes} onChange={(event) => setForm({ ...form, modes: event.target.value })} placeholder="Criança vulnerável, protetor desligado..." /></label>
-              <label>Coping<textarea value={form.coping_strategies} onChange={(event) => setForm({ ...form, coping_strategies: event.target.value })} placeholder="Evitação, hipercompensação..." /></label>
-              <label>Necessidades emocionais<textarea value={form.emotional_needs} onChange={(event) => setForm({ ...form, emotional_needs: event.target.value })} placeholder="Segurança, validação, autonomia..." /></label>
-              <label>Gatilhos<textarea value={form.triggers} onChange={(event) => setForm({ ...form, triggers: event.target.value })} /></label>
-              <label>Ciclos de manutenção<textarea value={form.maintenance_cycles} onChange={(event) => setForm({ ...form, maintenance_cycles: event.target.value })} /></label>
-              <label className="span-two">Fatores protetivos<textarea value={form.protective_factors} onChange={(event) => setForm({ ...form, protective_factors: event.target.value })} /></label>
-              <label className="span-two">Foco terapêutico<textarea value={form.therapy_focus} onChange={(event) => setForm({ ...form, therapy_focus: event.target.value })} /></label>
-            </div>
-            <footer>
-              <Button variant="ghost" type="button" onClick={() => setForm(null)}>Cancelar</Button>
-              <Button variant="primary" type="submit" disabled={mutation.isPending}>{mutation.isPending ? 'Salvando...' : 'Salvar conceitualização'}</Button>
-            </footer>
-          </form>
-        </div>
-      ) : null}
     </article>
   )
 }

@@ -572,26 +572,166 @@ export type GenogramData = {
   relationships: GenogramRelationshipRow[]
 }
 
-export type CaseConceptualizationData = {
-  summary?: string | null
-  core_schemas?: string[] | null
-  modes?: string[] | null
-  coping_strategies?: string[] | null
-  emotional_needs?: string[] | null
-  triggers?: string[] | null
-  maintenance_cycles?: string[] | null
-  protective_factors?: string[] | null
-  therapy_focus?: string | null
+// ── Conceitualização de caso (espelha o modelo do app Flutter) ────────────────
+
+export type UnmetNeed = {
+  need_key: string
+  rating?: string | null   // '0'–'5' ou 'X' (informação insuficiente)
+  origin?: string | null
+  schemas?: string | null
+}
+
+export type ModeSequence = {
+  trigger?: string | null
+  activated_modes?: string | null
+  coping_mode?: string | null
+  sequence?: string | null
+  effect?: string | null
+  perpetuation?: string | null
+}
+
+export type TherapeuticRelationship = {
+  collaboration_rating?: number | null   // 1–5
+  collaboration_notes?: string | null
+  bond_rating?: number | null            // 1–5
+  bond_notes?: string | null
+  therapist_reactions?: string | null
+}
+
+export type GeneralImpressions = {
+  initial?: string | null
+  current?: string | null
+}
+
+export type DiagnosisItem = {
+  name?: string | null
+  code?: string | null
+}
+
+export type CaseDiagnosis = {
+  system?: string | null   // 'CID-11' | 'DSM-5-TR'
+  items?: DiagnosisItem[]
+}
+
+export type CaseOrigins = {
+  early_history?: string | null
+  temperament?: string | null
+  cultural?: string | null
 }
 
 export type CaseConceptualizationRow = {
   id: string
   patient_id: string
-  data: CaseConceptualizationData
-  created_at?: string | null
+  clinic_id?: string | null
+  unmet_needs?: UnmetNeed[] | null
+  mode_sequences?: ModeSequence[] | null
+  therapeutic_relationship?: TherapeuticRelationship | null
+  general_impressions?: GeneralImpressions | null
+  diagnosis?: CaseDiagnosis | null
+  origins?: CaseOrigins | null
+  motivo_notes?: string | null
+  additional_comments?: string | null
   updated_at?: string | null
 }
 
+// ── Avaliação inicial — tabelas do app Flutter ────────────────────────────────
+
+export type PatientIntakeRow = {
+  patient_id: string
+  reason_for_seeking?: string | null
+  problem_duration?: string | null
+  main_discomfort?: string | null
+  expectations?: string | null
+  related_event?: string | null
+  completed_at?: string | null
+  filled_by_role?: string | null
+}
+
+export type PatientClinicalIntakeRow = {
+  patient_id: string
+  initial_observations?: string | null
+  main_complaint?: string | null
+  current_problem?: string | null
+  precipitating_factors?: string | null
+  patient_goals?: string | null
+  motivation?: string | null
+  initial_hypotheses?: string | null
+  updated_by_profile_id?: string | null
+}
+
+export type PatientLifeAreaRow = {
+  patient_id: string
+  area_key: string
+  score?: number | null
+  suffering?: number | null
+  guided_answer?: string | null
+  filled_by_role?: string | null
+  assessed_at?: string | null
+}
+
+export type PatientClinicalImpressionsRow = {
+  patient_id: string
+  observed_temperament?: string | null
+  therapeutic_bond?: string | null
+  resources?: string | null
+  vulnerabilities?: string | null
+  hypotheses?: string | null
+  previous_diagnoses?: string | null
+  differential_diagnosis?: string | null
+  functioning_level?: string | null
+  therapeutic_priorities?: string | null
+  schema_hypotheses_text?: string | null
+  mode_hypotheses_text?: string | null
+  emotional_needs_text?: string | null
+}
+
+export type ClinicalHypothesisRow = {
+  id: string
+  kind: string
+  body: string
+}
+
+export type PatientFamilyContextRow = {
+  patient_id: string
+  family_climate?: string[] | null
+  family_climate_other?: string | null
+  transgenerational_patterns?: string[] | null
+  transgenerational_patterns_other?: string | null
+  filled_by_role?: string | null
+}
+
+export type GenogramFamilyPatternsRow = {
+  patient_id: string
+  pattern_keys?: string[] | null
+  other_text?: string | null
+}
+
+export type TimelineEventNoteRow = {
+  event_id: string
+  clinical_comment?: string | null
+}
+
+export type GenogramPersonNoteRow = {
+  person_id: string
+  clinical_comment?: string | null
+}
+
+export type PatientLifeAreaNoteRow = {
+  patient_id: string
+  area_key: string
+  clinical_comment?: string | null
+}
+
+export type SchemaActivationRow = {
+  id: string
+  questionnaire_response_id: string
+  schema_code: string
+  schema_name: string
+  psi_observation?: string | null
+  created_at?: string | null
+}
+
+// ── PersonalityDomainScore (original) ────────────────────────────────────────
 export type PersonalityDomainScore = {
   domain: string
   score?: number | null

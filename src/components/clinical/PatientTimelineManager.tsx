@@ -1,11 +1,11 @@
-import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
-import { CalendarClock, Edit3, LockKeyhole, Plus, Trash2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { CalendarClock, Edit3, LockKeyhole, MessageSquare, Plus, Trash2 } from 'lucide-react'
 import { Badge } from '../design-system/Badge'
 import { Button } from '../design-system/Button'
 import { EmptyState } from '../design-system/EmptyState'
 import { formatDate } from '../../lib/format'
-import { createPatientTimelineEvent, deletePatientTimelineEvent, updatePatientTimelineEvent } from '../../services/supabaseQueries'
+import { createPatientTimelineEvent, deletePatientTimelineEvent, listTimelineEventNotes, updatePatientTimelineEvent } from '../../services/supabaseQueries'
 import type { PatientDetailData, PatientTimelineEventRow } from '../../types'
 
 type TimelineForm = {
@@ -60,6 +60,19 @@ export function PatientTimelineManager({ data, onChanged }: {
 }) {
   const [form, setForm] = useState<TimelineForm | null>(null)
   const visibleEvents = data.timelineEvents.slice(0, 20)
+
+  const eventNotes = useQuery({
+    queryKey: ['timeline-event-notes', data.patient.id],
+    queryFn: () => listTimelineEventNotes(data.patient.id),
+  })
+
+  const notesByEvent = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const n of eventNotes.data ?? []) {
+      if (n.clinical_comment) map.set(n.event_id, n.clinical_comment)
+    }
+    return map
+  }, [eventNotes.data])
 
   const saveMutation = useMutation({
     mutationFn: (input: TimelineForm) => {
@@ -132,6 +145,12 @@ export function PatientTimelineManager({ data, onChanged }: {
                   <span>Impacto {event.emotional_impact ?? '—'}/10</span>
                   {event.is_sensitive ? <span><LockKeyhole size={13} aria-hidden="true" /> Conteúdo sensível</span> : null}
                 </div>
+                {notesByEvent.get(event.id) ? (
+                  <p style={{ margin: '0', padding: 'var(--space-2) 0 0', fontSize: 'var(--text-supporting)', color: 'var(--color-brand-navy)', display: 'flex', gap: 'var(--space-1)', alignItems: 'flex-start' }}>
+                    <MessageSquare size={13} style={{ flexShrink: 0, marginTop: 2 }} />
+                    {notesByEvent.get(event.id)}
+                  </p>
+                ) : null}
                 <div className="table-actions">
                   <Button variant="ghost" size="sm" onClick={() => setForm(toForm(event))}><Edit3 size={15} aria-hidden="true" /> Editar</Button>
                   <Button

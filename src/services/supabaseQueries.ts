@@ -1,5 +1,5 @@
 ﻿import { getSupabase } from '../lib/supabase'
-import type { AdminProfile, AuditData, CaseConceptualizationData, CaseConceptualizationRow, Clinic, ClinicDetailData, ClinicalAlertSeverity, ClinicalReportIncludeOptions, ClinicalReportPdfResult, ClinicFeatureEntitlement, CreatedPatientInvitation, DashboardData, GenogramData, GenogramPersonRow, GenogramRelationshipRow, LibraryIndicationRow, LibraryWorkLayer, LibraryWorkRow, Patient, PatientDataCompletionRow, PatientDetailData, PatientInvitation, PatientOverviewData, PatientPortalQuestionnaireAssignment, PatientPortalResultsData, PatientTimelineEventRow, PersonalityAssessmentRow, PersonalityClinicalSynthesis, PersonalityConceptualizationIntegration, PersonalityResults, PlansData, ProfileRole, PsychoeducationCard, PsychoeducationModuleRow, PsychologistAlertKind, PsychologistAlertRow, PsychologistDetailData, QuestionnaireCatalogItem, QuestionnaireAccessRow, QuestionnaireDetail, QuestionnaireQuestion, QuestionnaireSessionData, ReportsData, SettingsData, TherapyResourceRow, UserProfile } from '../types'
+import type { AdminProfile, AuditData, CaseConceptualizationRow, ClinicalHypothesisRow, Clinic, ClinicDetailData, ClinicalAlertSeverity, ClinicalReportIncludeOptions, ClinicalReportPdfResult, ClinicFeatureEntitlement, CreatedPatientInvitation, DashboardData, GenogramData, GenogramFamilyPatternsRow, GenogramPersonNoteRow, GenogramPersonRow, GenogramRelationshipRow, LibraryIndicationRow, LibraryWorkLayer, LibraryWorkRow, Patient, PatientClinicalImpressionsRow, PatientClinicalIntakeRow, PatientDataCompletionRow, PatientDetailData, PatientFamilyContextRow, PatientIntakeRow, PatientInvitation, PatientLifeAreaNoteRow, PatientLifeAreaRow, PatientOverviewData, PatientPortalQuestionnaireAssignment, PatientPortalResultsData, PatientTimelineEventRow, PersonalityAssessmentRow, PersonalityClinicalSynthesis, PersonalityConceptualizationIntegration, PersonalityResults, PlansData, ProfileRole, PsychoeducationCard, PsychoeducationModuleRow, PsychologistAlertKind, PsychologistAlertRow, PsychologistDetailData, QuestionnaireCatalogItem, QuestionnaireAccessRow, QuestionnaireDetail, QuestionnaireQuestion, QuestionnaireSessionData, ReportsData, SchemaActivationRow, SettingsData, TherapyResourceRow, TimelineEventNoteRow, UserProfile } from '../types'
 
 function throwIfError(error: unknown) {
   if (error) throw error
@@ -2519,8 +2519,8 @@ export async function getPatientGenogram(patientId: string): Promise<GenogramDat
   const client = getSupabase()
   const [personsResult, relationshipsResult] = await Promise.all([
     client
-      .from('genogram_persons')
-      .select('id, clinic_id, patient_id, created_by, full_name, nickname, relationship_to_patient, gender, birth_year, death_year, is_deceased, caregiver_role, illness_type, pregnancy_loss_type, notes, is_sensitive, created_at, updated_at')
+      .from('genogram_people')
+      .select('id, clinic_id, patient_id, created_by, full_name, nickname, relationship_to_patient, gender, birth_year, death_year, is_deceased, caregiver_role, notes, is_sensitive, created_at, updated_at')
       .eq('patient_id', patientId)
       .order('created_at', { ascending: true }),
     client
@@ -2606,15 +2606,13 @@ export async function saveGenogramPerson(input: {
     death_year: input.death_year ?? null,
     is_deceased: Boolean(input.is_deceased),
     caregiver_role: clean(input.caregiver_role),
-    illness_type: clean(input.illness_type),
-    pregnancy_loss_type: clean(input.pregnancy_loss_type),
     notes: clean(input.notes),
     is_sensitive: Boolean(input.is_sensitive),
   }
 
   if (input.id) {
     const { error } = await getSupabase()
-      .from('genogram_persons')
+      .from('genogram_people')
       .update(payload)
       .eq('id', input.id)
     throwIfError(error)
@@ -2622,7 +2620,7 @@ export async function saveGenogramPerson(input: {
   }
 
   const { data, error } = await getSupabase()
-    .from('genogram_persons')
+    .from('genogram_people')
     .insert(payload)
     .select('id')
     .single()
@@ -2631,7 +2629,7 @@ export async function saveGenogramPerson(input: {
 }
 
 export async function deleteGenogramPerson(id: string) {
-  const { error } = await getSupabase().from('genogram_persons').delete().eq('id', id)
+  const { error } = await getSupabase().from('genogram_people').delete().eq('id', id)
   throwIfError(error)
 }
 
@@ -2667,7 +2665,7 @@ export async function deleteGenogramRelationship(id: string) {
 export async function getCaseConceptualization(patientId: string): Promise<CaseConceptualizationRow | null> {
   const { data, error } = await getSupabase()
     .from('case_conceptualizations')
-    .select('id, patient_id, data, created_at, updated_at')
+    .select('id, patient_id, clinic_id, unmet_needs, mode_sequences, therapeutic_relationship, general_impressions, diagnosis, origins, motivo_notes, additional_comments, updated_at')
     .eq('patient_id', patientId)
     .order('updated_at', { ascending: false, nullsFirst: false })
     .limit(1)
@@ -2676,42 +2674,112 @@ export async function getCaseConceptualization(patientId: string): Promise<CaseC
   return (data ?? null) as CaseConceptualizationRow | null
 }
 
-export async function saveCaseConceptualization(input: {
-  id?: string | null
-  patient_id: string
-  data: CaseConceptualizationData
-}) {
-  const payload = {
-    patient_id: input.patient_id,
-    data: input.data,
-  }
+// ── Avaliação inicial ─────────────────────────────────────────────────────────
 
-  if (input.id) {
-    const { error } = await getSupabase()
-      .from('case_conceptualizations')
-      .update(payload)
-      .eq('id', input.id)
-    throwIfError(error)
-    return input.id
-  }
-
-  const existing = await getCaseConceptualization(input.patient_id)
-  if (existing?.id) {
-    const { error } = await getSupabase()
-      .from('case_conceptualizations')
-      .update(payload)
-      .eq('id', existing.id)
-    throwIfError(error)
-    return existing.id
-  }
-
+export async function getPatientIntake(patientId: string): Promise<PatientIntakeRow | null> {
   const { data, error } = await getSupabase()
-    .from('case_conceptualizations')
-    .insert(payload)
-    .select('id')
-    .single()
+    .from('patient_intake')
+    .select('patient_id, reason_for_seeking, problem_duration, main_discomfort, expectations, related_event, completed_at, filled_by_role')
+    .eq('patient_id', patientId)
+    .maybeSingle()
   throwIfError(error)
-  return data?.id as string
+  return (data ?? null) as PatientIntakeRow | null
+}
+
+export async function getPatientClinicalIntake(patientId: string): Promise<PatientClinicalIntakeRow | null> {
+  const { data, error } = await getSupabase()
+    .from('patient_clinical_intake')
+    .select('patient_id, initial_observations, main_complaint, current_problem, precipitating_factors, patient_goals, motivation, initial_hypotheses')
+    .eq('patient_id', patientId)
+    .maybeSingle()
+  throwIfError(error)
+  return (data ?? null) as PatientClinicalIntakeRow | null
+}
+
+export async function listPatientLifeAreas(patientId: string): Promise<PatientLifeAreaRow[]> {
+  const { data, error } = await getSupabase()
+    .from('patient_life_areas')
+    .select('patient_id, area_key, score, suffering, guided_answer, filled_by_role, assessed_at')
+    .eq('patient_id', patientId)
+  throwIfError(error)
+  return (data ?? []) as PatientLifeAreaRow[]
+}
+
+export async function getPatientClinicalImpressions(patientId: string): Promise<PatientClinicalImpressionsRow | null> {
+  const { data, error } = await getSupabase()
+    .from('patient_clinical_impressions')
+    .select('patient_id, observed_temperament, therapeutic_bond, resources, vulnerabilities, hypotheses, previous_diagnoses, differential_diagnosis, functioning_level, therapeutic_priorities, schema_hypotheses_text, mode_hypotheses_text, emotional_needs_text')
+    .eq('patient_id', patientId)
+    .maybeSingle()
+  throwIfError(error)
+  return (data ?? null) as PatientClinicalImpressionsRow | null
+}
+
+export async function listClinicalHypotheses(patientId: string): Promise<ClinicalHypothesisRow[]> {
+  const { data, error } = await getSupabase()
+    .from('clinical_hypotheses')
+    .select('id, kind, body')
+    .eq('patient_id', patientId)
+    .order('created_at', { ascending: true })
+  throwIfError(error)
+  return (data ?? []) as ClinicalHypothesisRow[]
+}
+
+export async function getPatientFamilyContext(patientId: string): Promise<PatientFamilyContextRow | null> {
+  const { data, error } = await getSupabase()
+    .from('patient_family_context')
+    .select('patient_id, family_climate, family_climate_other, transgenerational_patterns, transgenerational_patterns_other, filled_by_role')
+    .eq('patient_id', patientId)
+    .maybeSingle()
+  throwIfError(error)
+  return (data ?? null) as PatientFamilyContextRow | null
+}
+
+export async function getGenogramFamilyPatterns(patientId: string): Promise<GenogramFamilyPatternsRow | null> {
+  const { data, error } = await getSupabase()
+    .from('genogram_family_patterns')
+    .select('patient_id, pattern_keys, other_text')
+    .eq('patient_id', patientId)
+    .maybeSingle()
+  throwIfError(error)
+  return (data ?? null) as GenogramFamilyPatternsRow | null
+}
+
+export async function listTimelineEventNotes(patientId: string): Promise<TimelineEventNoteRow[]> {
+  const { data, error } = await getSupabase()
+    .from('patient_timeline_event_notes')
+    .select('event_id, clinical_comment')
+    .eq('patient_id', patientId)
+  throwIfError(error)
+  return (data ?? []) as TimelineEventNoteRow[]
+}
+
+export async function listGenogramPersonNotes(patientId: string): Promise<GenogramPersonNoteRow[]> {
+  const { data, error } = await getSupabase()
+    .from('genogram_person_notes')
+    .select('person_id, clinical_comment')
+    .eq('patient_id', patientId)
+  throwIfError(error)
+  return (data ?? []) as GenogramPersonNoteRow[]
+}
+
+export async function listPatientLifeAreaNotes(patientId: string): Promise<PatientLifeAreaNoteRow[]> {
+  const { data, error } = await getSupabase()
+    .from('patient_life_area_notes')
+    .select('patient_id, area_key, clinical_comment')
+    .eq('patient_id', patientId)
+  throwIfError(error)
+  return (data ?? []) as PatientLifeAreaNoteRow[]
+}
+
+export async function listSchemaActivations(patientId: string): Promise<SchemaActivationRow[]> {
+  const { data, error } = await getSupabase()
+    .from('questionnaire_schema_activations')
+    .select('id, questionnaire_response_id, schema_code, schema_name, psi_observation, created_at')
+    .eq('patient_id', patientId)
+    .order('created_at', { ascending: false })
+  throwIfError(error)
+  return (data ?? []) as SchemaActivationRow[]
 }
 
 export async function listPersonalityAssessments(patientId: string): Promise<PersonalityAssessmentRow[]> {
