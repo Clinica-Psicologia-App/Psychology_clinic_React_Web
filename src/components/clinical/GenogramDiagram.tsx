@@ -364,7 +364,7 @@ function EmotionalBond({ x1, y1, x2, y2, type }: { x1: number; y1: number; x2: n
 }
 
 // ── Símbolo de perda gestacional (triângulo) ──────────────────────────────────
-function PregnancyLossSymbol({ x, y, r, type }: { x: number; y: number; r: number; type: string }) {
+function PregnancyLossSymbol({ x, y, type }: { x: number; y: number; type: string }) {
   const tr = 14
   const d = trianglePath(x, y + 2, tr)
   const isFilled = type === 'stillbirth' || type === 'voluntary'
@@ -448,7 +448,7 @@ function PersonNode({ node, onClick, delay = 0 }: { node: NodeInfo; onClick?: ()
         className="geno-card-node genogram-svg-node"
         style={{ animationDelay: `${delay}s`, cursor: onClick ? 'pointer' : undefined }}
       >
-        <PregnancyLossSymbol x={x} y={y} r={r} type={person.pregnancy_loss_type} />
+        <PregnancyLossSymbol x={x} y={y} type={person.pregnancy_loss_type} />
         <text x={x} y={y + 22} textAnchor="middle" fontSize={9.5} fontWeight="700" fill={C_LABEL}>{firstName}</text>
         {person.relationship_to_patient && <text x={x} y={y + 33} textAnchor="middle" fontSize={8.5} fill={C_SUB}>{person.relationship_to_patient}</text>}
       </g>
