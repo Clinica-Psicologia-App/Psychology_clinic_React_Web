@@ -49,7 +49,7 @@ export function LoginPage() {
         </div>
         <div className="login-hero-copy">
           <span className="login-eyebrow">Painel administrativo</span>
-          <h1>A clínica no controle da aplicação dos psicólogos.</h1>
+          <h1>Onde as informações se conectam e a clínica ganha sentido.</h1>
           <p>Gerencie profissionais licenciados, pacientes, questionários e governança clínica em uma central web conectada ao aplicativo EsquemaCore.</p>
         </div>
         <div className="login-positioning">
