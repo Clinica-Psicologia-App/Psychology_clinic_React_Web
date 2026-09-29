@@ -30,6 +30,10 @@
   ],
   "rewrites": [
     {
+      "source": "/convite",
+      "destination": "/convite.html"
+    },
+    {
       "source": "/((?!assets/).*)",
       "destination": "/index.html"
     }

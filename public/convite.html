@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Abrindo EsquemaCore…</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;background:#f5f5f5;display:flex;align-items:center;
+         justify-content:center;min-height:100vh;padding:24px}
+    .card{background:#fff;border-radius:12px;padding:40px 32px;max-width:420px;width:100%;
+          text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.1)}
+    .logo{font-size:22px;font-weight:700;color:#1a1a2e;margin-bottom:24px}
+    .spinner{width:40px;height:40px;border:3px solid #e0e0e0;border-top-color:#3B82F6;
+             border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    p{color:#555;line-height:1.6;font-size:15px}
+    #btn{display:none;margin-top:24px;background:#3B82F6;color:#fff;text-decoration:none;
+         padding:14px 32px;border-radius:8px;font-size:16px;font-weight:600;border:none;cursor:pointer}
+    .hint{margin-top:32px;font-size:12px;color:#aaa}
+    .error{color:#c00}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">EsquemaCore</div>
+    <div id="spinner" class="spinner"></div>
+    <p id="msg">Abrindo o aplicativo…</p>
+    <a id="btn" href="#">Abrir no EsquemaCore</a>
+    <p class="hint" id="hint">Certifique-se de ter o aplicativo <strong>EsquemaCore</strong> instalado no seu celular.</p>
+  </div>
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var token = params.get('token');
+
+      if (!token) {
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('hint').style.display = 'none';
+        document.getElementById('msg').innerHTML =
+          '<span class="error">Link de convite inválido. Solicite um novo convite à clínica.</span>';
+        return;
+      }
+
+      var deepLink = 'esquemacore://app/accept-invitation?token=' + encodeURIComponent(token);
+      document.getElementById('btn').href = deepLink;
+
+      window.location.href = deepLink;
+
+      setTimeout(function() {
+        document.getElementById('btn').style.display = 'inline-block';
+        document.getElementById('msg').textContent =
+          'Se o aplicativo não abriu automaticamente, toque no botão abaixo:';
+      }, 1500);
+    })();
+  </script>
+</body>
+</html>
