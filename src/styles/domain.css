@@ -3845,3 +3845,124 @@
   color: var(--text-primary);
   font-weight: var(--weight-medium);
 }
+
+/* ── Life Chapters Panel ── */
+.life-chapters-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+}
+.life-chapter-item {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+.life-chapter-years {
+  min-width: 76px;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  text-align: right;
+  padding-top: 3px;
+  flex-shrink: 0;
+}
+.life-chapter-content {
+  flex: 1;
+  border-left: 2px solid var(--border);
+  padding-left: var(--space-3);
+}
+.life-chapter-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-1);
+}
+.life-chapter-desc {
+  font-size: var(--text-supporting);
+  color: var(--text-body);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Timeline Beliefs Panel ── */
+.belief-filter-tabs {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+.belief-filter-tab {
+  padding: 4px var(--space-3);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.belief-filter-tab:hover { background: var(--bg-muted); }
+.belief-filter-tab.active {
+  background: var(--color-brand-navy);
+  color: #fff;
+  border-color: var(--color-brand-navy);
+}
+.belief-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.belief-item {
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-subtle);
+}
+.belief-item.core {
+  border-color: var(--color-brand-navy);
+  background: color-mix(in srgb, var(--color-brand-navy) 5%, transparent);
+}
+.belief-main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.belief-core-marker {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-brand-navy);
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+.belief-text {
+  font-size: var(--text-body);
+  font-style: italic;
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+  border: none;
+  flex: 1;
+}
+.belief-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+}
+.belief-intensity {
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+}
+.belief-therapist-note {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-supporting);
+  color: var(--text-muted);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle, var(--border));
+}

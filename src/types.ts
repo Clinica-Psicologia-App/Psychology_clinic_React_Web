@@ -731,6 +731,33 @@ export type TimelineEventPersonRow = {
   person_id: string
 }
 
+export type LifeChapterRow = {
+  id: string
+  patient_id: string
+  title: string
+  start_year?: number | null
+  end_year?: number | null
+  description?: string | null
+  dominant_emotion?: string | null
+  order_index: number
+  created_at: string
+  updated_at?: string | null
+}
+
+export type TimelineBeliefRow = {
+  id: string
+  patient_id: string
+  timeline_event_id?: string | null
+  belief_text: string
+  belief_domain?: string | null
+  schema_code?: string | null
+  intensity?: number | null
+  is_core_belief: boolean
+  therapist_note?: string | null
+  created_at: string
+  updated_at?: string | null
+}
+
 export type GenogramPersonNoteRow = {
   person_id: string
   clinical_comment?: string | null
@@ -934,6 +961,8 @@ export type PatientDetailData = {
   availableQuestionnaires: PatientAvailableQuestionnaireRow[]
   monthlyResponses: ReportMonthlyPoint[]
   auditEvents: AuditEventRow[]
+  lifeChapters: LifeChapterRow[]
+  timelineBeliefs: TimelineBeliefRow[]
 }
 export type PlatformPlan = {
   id: string

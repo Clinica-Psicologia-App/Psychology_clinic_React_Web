@@ -1761,6 +1761,15 @@ export async function getPatientDetail(patientId: string): Promise<PatientDetail
   const releasedResourceIds = new Set((resourceAccessResult.data ?? []).map((row) => row.resource_id as string))
   const activeAssignedIds = new Set(activeAssignments.map((assignment) => assignment.questionnaire_id))
 
+  // Tabelas opcionais — podem não existir ainda (criadas pelo Flutter).
+  // Erros são silenciados; a UI exibe estado vazio até os dados chegarem.
+  const [chaptersResult, beliefsResult] = await Promise.all([
+    client.from('patient_life_chapters' as 'patients').select('id, patient_id, title, start_year, end_year, description, dominant_emotion, order_index, created_at, updated_at').eq('patient_id', patientId).order('order_index'),
+    client.from('patient_timeline_beliefs' as 'patients').select('id, patient_id, timeline_event_id, belief_text, belief_domain, schema_code, intensity, is_core_belief, therapist_note, created_at, updated_at').eq('patient_id', patientId).order('is_core_belief', { ascending: false }),
+  ])
+  const lifeChapters = (!chaptersResult.error ? chaptersResult.data ?? [] : []) as PatientDetailData['lifeChapters']
+  const timelineBeliefs = (!beliefsResult.error ? beliefsResult.data ?? [] : []) as PatientDetailData['timelineBeliefs']
+
   return {
     patient: {
       ...patient,
@@ -1868,6 +1877,8 @@ export async function getPatientDetail(patientId: string): Promise<PatientDetail
         metadata: row.metadata,
       }
     }),
+    lifeChapters,
+    timelineBeliefs,
   }
 }
 

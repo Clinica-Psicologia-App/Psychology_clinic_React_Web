@@ -31,6 +31,8 @@ import { PatientPersonalityManager } from '../components/clinical/PatientPersona
 import { PatientClinicalReportPanel } from '../components/clinical/PatientClinicalReportPanel'
 import { PatientScoreEvolutionPanel } from '../components/clinical/PatientScoreEvolutionPanel'
 import { PatientMonitoringPanel } from '../components/clinical/PatientMonitoringPanel'
+import { PatientLifeChaptersPanel } from '../components/clinical/PatientLifeChaptersPanel'
+import { PatientTimelineBeliefsPanel } from '../components/clinical/PatientTimelineBeliefsPanel'
 
 function percent(part: number, total: number) {
   if (!total) return 0
@@ -255,6 +257,8 @@ export function PatientDetailPage() {
                 <PatientProblemsManager data={data} onChanged={() => refetch()} />
                 <PatientGoalsManager data={data} onChanged={() => refetch()} />
                 <PatientTimelineManager data={data} onChanged={() => refetch()} />
+                <PatientLifeChaptersPanel chapters={data.lifeChapters} />
+                <PatientTimelineBeliefsPanel beliefs={data.timelineBeliefs} />
               </div>
             )}
 
