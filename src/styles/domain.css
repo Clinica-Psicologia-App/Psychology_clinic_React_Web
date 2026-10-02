@@ -3161,6 +3161,51 @@
   }
 }
 
+/* ── Jornada — fases e passos ──────────────────────────────────────────────── */
+.journey-phase-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-2); margin-bottom: var(--space-2); }
+.journey-phase-pill { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--border-subtle); background: var(--surface-primary); text-align: center; transition: border-color .15s; }
+.journey-phase-pill--done { border-color: var(--green, #22c55e); background: color-mix(in srgb, var(--green, #22c55e) 8%, transparent); }
+.journey-phase-pill--active { border-color: var(--color-brand-teal, #0f9c90); background: color-mix(in srgb, var(--color-brand-teal, #0f9c90) 8%, transparent); }
+.journey-phase-pill--pending { opacity: .55; }
+.journey-phase-label { font-size: var(--text-caption); font-weight: 700; color: var(--text-body); }
+.journey-phase-sub { font-size: 10px; color: var(--text-muted); }
+
+.journey-phase-section { margin-bottom: var(--space-4); }
+.journey-phase-heading { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); padding: var(--space-1) 0; border-bottom: 1px solid var(--border-subtle); }
+.journey-phase-name { font-size: var(--text-caption); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--color-brand-teal, #0f9c90); }
+.journey-phase-subtitle { font-size: var(--text-caption); color: var(--text-muted); }
+.journey-phase-steps { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.journey-step { border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--surface-primary); overflow: hidden; }
+.journey-step--lateral { margin-left: var(--space-5); border-style: dashed; opacity: .85; }
+.journey-step--completed { border-color: color-mix(in srgb, var(--green, #22c55e) 35%, var(--border-subtle)); }
+.journey-step--inProgress { border-color: color-mix(in srgb, var(--color-brand-teal, #0f9c90) 35%, var(--border-subtle)); }
+
+.journey-step-header { display: flex; align-items: center; gap: var(--space-3); width: 100%; background: none; border: none; text-align: left; cursor: pointer; padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); color: var(--text-primary); transition: background .12s; }
+.journey-step-header:hover { background: var(--surface-hover); }
+
+.journey-step-icon { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 7px; background: var(--surface-secondary); color: var(--text-muted); flex-shrink: 0; }
+.journey-step--completed .journey-step-icon { background: color-mix(in srgb, var(--green, #22c55e) 12%, transparent); color: var(--green, #22c55e); }
+.journey-step--inProgress .journey-step-icon { background: color-mix(in srgb, var(--color-brand-teal, #0f9c90) 12%, transparent); color: var(--color-brand-teal, #0f9c90); }
+
+.journey-step-meta { flex: 1; min-width: 0; }
+.journey-step-meta strong { display: block; font-size: var(--text-supporting); font-weight: 600; line-height: 1.3; }
+.journey-step-meta span { display: block; font-size: var(--text-caption); color: var(--text-secondary); margin-top: 2px; }
+.journey-step-lateral-tag { display: inline-block; font-size: 10px; font-weight: 600; color: var(--text-muted); background: var(--surface-secondary); border-radius: 4px; padding: 1px 5px; margin: 0 4px 2px 0; vertical-align: middle; }
+
+.journey-step-right { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; color: var(--text-muted); }
+.journey-step-hint { font-size: var(--text-caption); color: var(--text-muted); white-space: nowrap; }
+.journey-step-milestone-count { font-size: 11px; font-weight: 600; background: var(--surface-secondary); padding: 2px 6px; border-radius: 10px; }
+
+.journey-step-body { padding: var(--space-2) var(--space-4) var(--space-4) calc(30px + var(--space-3) + var(--space-4)); border-top: 1px solid var(--border-subtle); }
+
+@media (max-width: 768px) {
+  .journey-phase-strip { grid-template-columns: 1fr 1fr; }
+  .journey-step--lateral { margin-left: var(--space-3); }
+  .journey-step-right { gap: var(--space-1); }
+  .journey-step-hint { display: none; }
+}
+
 /* ── Etapa 6: Profile page ── */
 .profile-page-layout {
   display: grid;
