@@ -80,6 +80,11 @@ export function ClinicalIntelligence({ data, onChanged }: { data: PatientDetailD
   const intensity = average(recentCheckIns.map((row) => row.problem_intensity_score))
   const completionRate = data.totals.responses ? Math.round((data.totals.completedResponses / data.totals.responses) * 100) : 0
 
+  const activatedSchemas = data.responseResults
+    .filter((r) => r.category_code?.startsWith('YSQ_SCHEMA_') && (r.professional_average_score ?? r.average_score ?? 0) >= 4.0)
+    .sort((a, b) => (b.professional_average_score ?? b.average_score ?? 0) - (a.professional_average_score ?? a.average_score ?? 0))
+  const topSchema = activatedSchemas[0]
+
   const continuityScore = useMemo(() => {
     let score = 20
     if (data.totals.activeGoals) score += 20
@@ -126,12 +131,14 @@ export function ClinicalIntelligence({ data, onChanged }: { data: PatientDetailD
     data.totals.draftResponses ? `${data.totals.draftResponses} questionário(s) em andamento.` : null,
     intensity != null && intensity >= 7 ? `Intensidade média recente elevada (${intensity}/10).` : null,
     anxiety != null && anxiety >= 7 ? `Ansiedade média recente elevada (${anxiety}/10).` : null,
+    activatedSchemas.length ? `${activatedSchemas.length} esquema(s) YSQ ativado(s) — considerar aprofundamento.` : null,
   ].filter(Boolean) as string[]
 
   const sessionQuestions = [
     mood != null ? `Como o paciente percebe a média recente de humor em ${mood}/10?` : 'Como o paciente descreve o estado emocional desde o último encontro?',
     anxiety != null ? `O que contribuiu para a ansiedade média de ${anxiety}/10?` : 'Houve situações recentes de ansiedade ou evitação?',
     data.totals.activeGoals ? 'Qual objetivo ativo merece prioridade nesta sessão?' : 'Qual objetivo terapêutico pode ser definido em conjunto?',
+    topSchema ? `Como o esquema de "${topSchema.category_name ?? topSchema.category_code}" se manifestou desde o último encontro?` : 'O paciente identificou algum padrão cognitivo ou crença recorrente nos últimos dias?',
   ]
 
   return (

@@ -153,7 +153,10 @@ export function PatientTimelineManager({ data, onChanged }: {
   onChanged: () => Promise<unknown>
 }) {
   const [form, setForm] = useState<TimelineForm | null>(null)
-  const visibleEvents = data.timelineEvents.slice(0, 20)
+  const [showAll, setShowAll] = useState(false)
+  const allEvents = data.timelineEvents
+  const visibleEvents = showAll ? allEvents : allEvents.slice(0, 20)
+  const hiddenCount = allEvents.length - 20
 
   const eventNotes = useQuery({
     queryKey: ['timeline-event-notes', data.patient.id],
@@ -311,6 +314,14 @@ export function PatientTimelineManager({ data, onChanged }: {
           title="Nenhum evento registrado"
           description="Adicione marcos de vida ou do processo terapêutico para apoiar a formulação do caso."
         />
+      )}
+
+      {!showAll && hiddenCount > 0 && (
+        <div style={{ textAlign: 'center', paddingTop: 'var(--space-2)' }}>
+          <Button variant="ghost" size="sm" onClick={() => setShowAll(true)}>
+            Ver todos os {allEvents.length} eventos
+          </Button>
+        </div>
       )}
 
       {form ? (

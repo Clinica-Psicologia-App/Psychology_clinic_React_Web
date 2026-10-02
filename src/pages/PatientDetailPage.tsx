@@ -296,7 +296,7 @@ export function PatientDetailPage() {
                     <div><span>Orientação sexual</span><strong>{labelOrRaw(SEXUAL_ORIENTATION_LABELS, data.patient.sexual_orientation)}</strong></div>
                     <div><span>Etnia</span><strong>{labelOrRaw(ETHNIC_GROUP_LABELS, data.patient.ethnic_group)}</strong></div>
                     <div><span>Religião</span><strong>{labelOrRaw(RELIGIOUS_ORIENTATION_LABELS, data.patient.religious_orientation)}</strong></div>
-                    <div><span>País de nascimento</span><strong>{data.patient.country_birth || 'Não informado'}</strong></div>
+                    <div><span>Origem</span><strong>{[data.patient.country_birth, data.patient.state_birth].filter(Boolean).join(' · ') || 'Não informado'}</strong></div>
                     <div><span>Inativado em</span><strong>{data.patient.inactivated_at ? formatDate(data.patient.inactivated_at) : 'Não'}</strong></div>
                   </div>
                 </ChartPanel>

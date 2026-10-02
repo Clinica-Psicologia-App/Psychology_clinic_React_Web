@@ -84,24 +84,42 @@ function topByScore(results: PatientQuestionnaireResultRow[], prefix: string, li
     .slice(0, limit)
 }
 
-// ── TDE pattern labels (espelha life_story_deepen_enums.dart) ────────────────
+// ── TDE pattern labels (espelha PatientTimelineManager — chaves reais do banco) ─
 
 const EMOTIONAL_NEED_LABELS: Record<string, string> = {
-  presence: 'Presença / companhia', safety: 'Segurança', acceptance: 'Aceitação',
-  affection: 'Afeto', validation: 'Validação', autonomy: 'Autonomia',
-  limits: 'Limites', play: 'Espontaneidade', guidance: 'Orientação',
+  presence:      'Presença / companhia',
+  safety:        'Segurança',
+  affection:     'Afeto e carinho',
+  understanding: 'Ser ouvido(a)',
+  acceptance:    'Aceitação',
+  expression:    'Expressão emocional',
+  autonomy:      'Autonomia',
+  encouragement: 'Incentivo e confiança',
+  limits:        'Limites e orientação',
+  play:          'Espontaneidade / lazer',
+  dont_know:     'Não identificado',
+  other:         'Outra necessidade',
 }
 
 const COPING_LABELS: Record<string, string> = {
-  avoidance: 'Evitação', surrender: 'Capitulação', overcompensation: 'Supercompensação',
-  isolation: 'Isolamento', intellectualization: 'Intelectualização',
-  emotional_suppression: 'Supressão emocional', self_blame: 'Autocrítica',
-  aggression: 'Agressão / raiva', dependency: 'Busca de aprovação',
+  avoidance:                'Evitação',
+  surrender_adaptation:     'Adaptação / capitulação',
+  overcompensation_reaction: 'Reação / supercompensação',
+  emotional_shutdown:       'Desligamento emocional',
+  help_protection:          'Busca de ajuda / proteção',
+  perfectionism:            'Perfeccionismo',
+  other:                    'Outro coping',
 }
 
 const PRESENT_AREA_LABELS: Record<string, string> = {
-  self_view: 'Como me vejo', relationships: 'Relacionamentos', work: 'Trabalho / Estudo',
-  health: 'Saúde', family: 'Família', leisure: 'Lazer', spirituality: 'Espiritualidade',
+  self_view:     'Como me vejo',
+  relationships: 'Relacionamentos',
+  family:        'Família',
+  emotions:      'Emoções',
+  work:          'Trabalho / estudos',
+  choices:       'Minhas escolhas',
+  coping:        'Como lido com dificuldades',
+  other:         'Outra área',
 }
 
 function topKeys(events: PatientTimelineEventRow[], getKeys: (e: PatientTimelineEventRow) => string[] | null | undefined, limit = 3) {
