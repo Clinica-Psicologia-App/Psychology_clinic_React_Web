@@ -1526,6 +1526,29 @@
   opacity: .86;
 }
 
+/* ── Clinical Core (PatientMentalMapSummary) ──────────────────────────────── */
+.clinical-core-section { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border-subtle); }
+.clinical-core-section-title { display: block; font-size: var(--text-caption); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin-bottom: var(--space-3); }
+.clinical-core-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.clinical-core-block { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--surface-secondary); }
+.clinical-core-block-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); flex-wrap: wrap; }
+.clinical-core-label { font-size: var(--text-caption); font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
+.clinical-core-domain { font-size: var(--text-caption); color: var(--color-brand-teal, #0f9c90); font-weight: 600; }
+.clinical-core-scores { display: flex; flex-direction: column; gap: var(--space-2); }
+.clinical-core-score-row { display: grid; grid-template-columns: 1fr 80px 28px; align-items: center; gap: var(--space-2); }
+.clinical-core-score-name { font-size: var(--text-caption); color: var(--text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.clinical-core-score-bar-bg { height: 6px; background: var(--surface-primary); border-radius: 3px; overflow: hidden; }
+.clinical-core-score-bar-fill { height: 100%; border-radius: 3px; transition: width .4s; }
+.clinical-core-score-value { font-size: var(--text-caption); font-weight: 700; text-align: right; }
+.clinical-core-modes { display: flex; flex-direction: column; gap: var(--space-2); }
+.clinical-core-mode-row { display: flex; align-items: center; gap: var(--space-2); }
+.clinical-core-mode-row .clinical-core-score-name { flex: 1; }
+.clinical-core-mode-row .clinical-core-score-value { margin-left: auto; }
+
+@media (max-width: 768px) {
+  .clinical-core-grid { grid-template-columns: 1fr; }
+}
+
 .resource-catalog-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
