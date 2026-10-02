@@ -1,11 +1,11 @@
 /**
  * Avaliação inicial completa — espelha os 4 blocos preenchidos no app Flutter:
- * Bloco 1 (queixa do paciente), Bloco 2 (intake clínico do terapeuta),
- * Bloco 3 (áreas de vida), Bloco 4 (impressões clínicas).
- * Somente leitura no painel web.
+ * Bloco 0 (dados básicos do paciente), Bloco 1 (queixa do paciente),
+ * Bloco 2 (intake clínico do terapeuta), Bloco 3 (áreas de vida),
+ * Bloco 4 (impressões clínicas). Somente leitura no painel web.
  */
 import { useQuery } from '@tanstack/react-query'
-import { Activity, Brain, ClipboardList, Heart, RefreshCw } from 'lucide-react'
+import { Activity, Brain, ClipboardList, Heart, RefreshCw, User } from 'lucide-react'
 import { EmptyState } from '../design-system/EmptyState'
 import {
   getPatientClinicalImpressions,
@@ -14,7 +14,98 @@ import {
   listPatientLifeAreaNotes,
   listPatientLifeAreas,
 } from '../../services/supabaseQueries'
-import type { PatientDetailData, PatientLifeAreaNoteRow, PatientLifeAreaRow } from '../../types'
+import type { Patient, PatientDetailData, PatientLifeAreaNoteRow, PatientLifeAreaRow } from '../../types'
+
+// ── Rótulos de dados básicos (espelham patient_basics_enums.dart) ────────────
+
+const GENDER_LABELS: Record<string, string> = {
+  male: 'Masculino', female: 'Feminino', non_binary: 'Não-binário',
+  other: 'Outro', prefer_not_to_say: 'Prefiro não informar',
+}
+
+const RELATIONSHIP_LABELS: Record<string, string> = {
+  single: 'Solteiro(a)', married: 'Casado(a)', divorced: 'Divorciado(a)',
+  widowed: 'Viúvo(a)', stable_union: 'União estável', separated: 'Separado(a)', other: 'Outro',
+}
+
+const EDUCATION_LABELS: Record<string, string> = {
+  incomplete_elementary: 'Fund. incompleto', complete_elementary: 'Fund. completo',
+  incomplete_high_school: 'Médio incompleto', complete_high_school: 'Médio completo',
+  incomplete_college: 'Superior incompleto', complete_college: 'Superior completo',
+  postgraduate: 'Pós-graduação', masters: 'Mestrado', doctorate: 'Doutorado',
+}
+
+const SEXUAL_ORIENTATION_LABELS: Record<string, string> = {
+  heterosexual: 'Heterossexual', homosexual: 'Homossexual', bisexual: 'Bissexual',
+  pansexual: 'Pansexual', asexual: 'Assexual', other: 'Outra', prefer_not_to_say: 'Prefiro não informar',
+}
+
+const ETHNIC_GROUP_LABELS: Record<string, string> = {
+  white: 'Branca', black: 'Preta', brown: 'Parda', yellow: 'Amarela',
+  indigenous: 'Indígena', other: 'Outra', prefer_not_to_say: 'Prefiro não informar',
+}
+
+const RELIGIOUS_ORIENTATION_LABELS: Record<string, string> = {
+  catholic: 'Católico(a)', evangelical: 'Evangélico(a)', spiritist: 'Espírita',
+  buddhist: 'Budista', atheist: 'Ateu/Atéia', agnostic: 'Agnóstico(a)',
+  other: 'Outra', prefer_not_to_say: 'Prefiro não informar',
+}
+
+function calcAge(birthDate?: string | null): number | null {
+  if (!birthDate) return null
+  const birth = new Date(birthDate)
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  return age
+}
+
+function BasicsItem({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null
+  return (
+    <div className="basics-item">
+      <span className="basics-item-label">{label}</span>
+      <span className="basics-item-value">{value}</span>
+    </div>
+  )
+}
+
+function PatientBasicsBlock({ patient }: { patient: Patient }) {
+  const age = calcAge(patient.birth_date)
+
+  const hasAny = age != null || patient.gender || patient.relationship_status ||
+    patient.education_level || patient.occupation || patient.has_children != null ||
+    patient.country_birth || patient.ethnic_group || patient.sexual_orientation ||
+    patient.religious_orientation
+
+  if (!hasAny) return null
+
+  return (
+    <section className="assessment-block">
+      <h3><User size={15} /> Dados básicos do paciente</h3>
+      <div className="patient-basics-grid">
+        {age != null && (
+          <BasicsItem label="Idade" value={`${age} anos`} />
+        )}
+        <BasicsItem label="Gênero" value={patient.gender ? (GENDER_LABELS[patient.gender] ?? patient.gender) : null} />
+        <BasicsItem label="Estado civil" value={patient.relationship_status ? (RELATIONSHIP_LABELS[patient.relationship_status] ?? patient.relationship_status) : null} />
+        <BasicsItem label="Escolaridade" value={patient.education_level ? (EDUCATION_LABELS[patient.education_level] ?? patient.education_level) : null} />
+        <BasicsItem label="Ocupação" value={patient.occupation} />
+        {patient.has_children != null && (
+          <BasicsItem label="Filhos" value={patient.has_children ? 'Sim' : 'Não'} />
+        )}
+        <BasicsItem
+          label="Nascimento"
+          value={[patient.country_birth, patient.state_birth].filter(Boolean).join(' · ') || null}
+        />
+        <BasicsItem label="Orientação sexual" value={patient.sexual_orientation ? (SEXUAL_ORIENTATION_LABELS[patient.sexual_orientation] ?? patient.sexual_orientation) : null} />
+        <BasicsItem label="Etnia" value={patient.ethnic_group ? (ETHNIC_GROUP_LABELS[patient.ethnic_group] ?? patient.ethnic_group) : null} />
+        <BasicsItem label="Religião / espiritualidade" value={patient.religious_orientation ? (RELIGIOUS_ORIENTATION_LABELS[patient.religious_orientation] ?? patient.religious_orientation) : null} />
+      </div>
+    </section>
+  )
+}
 
 // ── Rótulos das áreas de vida (mesmas chaves do Flutter) ─────────────────────
 const LIFE_AREA_LABELS: Record<string, string> = {
@@ -305,6 +396,9 @@ export function PatientInitialAssessmentPanel({ data }: { data: PatientDetailDat
         />
       ) : (
         <div className="assessment-blocks">
+
+          {/* Bloco 0 — Dados básicos do paciente */}
+          <PatientBasicsBlock patient={data.patient} />
 
           {/* Bloco 1 — Queixa do paciente */}
           {intake.data && (
