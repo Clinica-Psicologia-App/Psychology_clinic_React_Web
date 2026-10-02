@@ -36,7 +36,7 @@ function buildSeriesData(
     for (const result of responseResults) {
       const key = result.category_name ?? result.category_code ?? 'Categoria'
       categories.add(key)
-      point[key] = result.average_score ?? null
+      point[key] = result.professional_average_score ?? result.average_score ?? null
     }
     points.push(point)
   }

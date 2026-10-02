@@ -63,6 +63,39 @@ function yesNo(value?: boolean | null) {
   return 'Não informado'
 }
 
+const GENDER_LABELS: Record<string, string> = {
+  male: 'Masculino', female: 'Feminino', non_binary: 'Não-binário',
+  other: 'Outro', prefer_not_to_say: 'Prefiro não informar',
+}
+const RELATIONSHIP_LABELS: Record<string, string> = {
+  single: 'Solteiro(a)', married: 'Casado(a)', divorced: 'Divorciado(a)',
+  widowed: 'Viúvo(a)', stable_union: 'União estável', separated: 'Separado(a)', other: 'Outro',
+}
+const EDUCATION_LABELS: Record<string, string> = {
+  incomplete_elementary: 'Fund. incompleto', complete_elementary: 'Fund. completo',
+  incomplete_high_school: 'Médio incompleto', complete_high_school: 'Médio completo',
+  incomplete_college: 'Superior incompleto', complete_college: 'Superior completo',
+  postgraduate: 'Pós-graduação', masters: 'Mestrado', doctorate: 'Doutorado',
+}
+const SEXUAL_ORIENTATION_LABELS: Record<string, string> = {
+  heterosexual: 'Heterossexual', homosexual: 'Homossexual', bisexual: 'Bissexual',
+  pansexual: 'Pansexual', asexual: 'Assexual', other: 'Outra', prefer_not_to_say: 'Prefiro não informar',
+}
+const ETHNIC_GROUP_LABELS: Record<string, string> = {
+  white: 'Branca', black: 'Preta', brown: 'Parda', yellow: 'Amarela',
+  indigenous: 'Indígena', other: 'Outra', prefer_not_to_say: 'Prefiro não informar',
+}
+const RELIGIOUS_ORIENTATION_LABELS: Record<string, string> = {
+  catholic: 'Católico(a)', evangelical: 'Evangélico(a)', spiritist: 'Espírita',
+  buddhist: 'Budista', atheist: 'Ateu/Atéia', agnostic: 'Agnóstico(a)',
+  other: 'Outra', prefer_not_to_say: 'Prefiro não informar',
+}
+
+function labelOrRaw(map: Record<string, string>, key?: string | null) {
+  if (!key) return 'Não informado'
+  return map[key] ?? key
+}
+
 function actionLabel(action: string) {
   const labels: Record<string, string> = {
     insert: 'Criação',
@@ -251,11 +284,15 @@ export function PatientDetailPage() {
                   <div className="profile-kv-grid">
                     <div><span>CPF</span><strong>{data.patient.cpf || 'Não informado'}</strong></div>
                     <div><span>Nascimento</span><strong>{data.patient.birth_date ? formatDate(data.patient.birth_date) : 'Não informado'}</strong></div>
-                    <div><span>Gênero</span><strong>{data.patient.gender || 'Não informado'}</strong></div>
-                    <div><span>Estado civil</span><strong>{data.patient.relationship_status || 'Não informado'}</strong></div>
-                    <div><span>Escolaridade</span><strong>{data.patient.education_level || 'Não informado'}</strong></div>
+                    <div><span>Gênero</span><strong>{labelOrRaw(GENDER_LABELS, data.patient.gender)}</strong></div>
+                    <div><span>Estado civil</span><strong>{labelOrRaw(RELATIONSHIP_LABELS, data.patient.relationship_status)}</strong></div>
+                    <div><span>Escolaridade</span><strong>{labelOrRaw(EDUCATION_LABELS, data.patient.education_level)}</strong></div>
                     <div><span>Ocupação</span><strong>{data.patient.occupation || 'Não informado'}</strong></div>
                     <div><span>Tem filhos</span><strong>{yesNo(data.patient.has_children)}</strong></div>
+                    <div><span>Orientação sexual</span><strong>{labelOrRaw(SEXUAL_ORIENTATION_LABELS, data.patient.sexual_orientation)}</strong></div>
+                    <div><span>Etnia</span><strong>{labelOrRaw(ETHNIC_GROUP_LABELS, data.patient.ethnic_group)}</strong></div>
+                    <div><span>Religião</span><strong>{labelOrRaw(RELIGIOUS_ORIENTATION_LABELS, data.patient.religious_orientation)}</strong></div>
+                    <div><span>País de nascimento</span><strong>{data.patient.country_birth || 'Não informado'}</strong></div>
                     <div><span>Inativado em</span><strong>{data.patient.inactivated_at ? formatDate(data.patient.inactivated_at) : 'Não'}</strong></div>
                   </div>
                 </ChartPanel>
