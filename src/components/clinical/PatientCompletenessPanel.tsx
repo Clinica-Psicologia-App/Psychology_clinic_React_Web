@@ -28,18 +28,27 @@ export function PatientCompletenessPanel({ data }: { data: PatientDetailData }) 
     ],
   })
 
+  const hasTdeDeepenings = data.timelineEvents.some(
+    (e) => (e.emotional_need_keys?.length ?? 0) > 0 || (e.coping_keys?.length ?? 0) > 0,
+  )
+  const hasYsqResults = data.responseResults.some((r) => r.category_code?.startsWith('YSQ_SCHEMA_'))
+  const hasDemographics = Boolean(data.patient.birth_date && data.patient.occupation && data.patient.gender)
+
   const sections: Section[] = [
+    { label: 'Dados básicos do paciente', done: hasDemographics },
     { label: 'Avaliação inicial (paciente)', done: Boolean(intake.data) },
     { label: 'Intake clínico (terapeuta)', done: Boolean(clinicalIntake.data) },
     { label: 'Áreas de vida', done: (lifeAreas.data ?? []).length > 0 },
-    { label: 'Formulação de caso', done: Boolean(conceptualization.data) },
+    { label: 'Linha do tempo', done: data.timelineEvents.length > 0 },
+    { label: 'Aprofundamento TDE (linha de vida)', done: hasTdeDeepenings },
     { label: 'Genograma', done: (genogram.data?.persons ?? []).length > 0 },
     { label: 'Contexto familiar', done: Boolean(familyContext.data) },
+    { label: 'Questionários respondidos', done: data.totals.responses > 0 },
+    { label: 'Avaliação YSQ concluída', done: hasYsqResults },
+    { label: 'Formulação de caso', done: Boolean(conceptualization.data) },
     { label: 'Personalidade', done: (personality.data ?? []).length > 0 },
     { label: 'Problemas clínicos', done: data.problems.length > 0 },
     { label: 'Metas terapêuticas', done: data.goals.length > 0 },
-    { label: 'Linha do tempo', done: data.timelineEvents.length > 0 },
-    { label: 'Questionários', done: data.totals.responses > 0 },
   ]
 
   const done = sections.filter((s) => s.done).length
