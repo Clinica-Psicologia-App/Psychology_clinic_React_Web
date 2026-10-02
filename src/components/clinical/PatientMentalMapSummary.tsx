@@ -3,10 +3,10 @@
  * Quadrante padrão + MentalMapClinicalCore (top schemas YSQ / modos YAMI)
  * espelhando mental_map_clinical_core.dart do Flutter.
  */
-import { BrainCircuit, CalendarClock, HeartPulse, Target } from 'lucide-react'
+import { BrainCircuit, CalendarClock, HeartPulse, Layers, Target } from 'lucide-react'
 import { Badge } from '../design-system/Badge'
 import { EmptyState } from '../design-system/EmptyState'
-import type { PatientDetailData, PatientQuestionnaireResultRow } from '../../types'
+import type { PatientDetailData, PatientQuestionnaireResultRow, PatientTimelineEventRow } from '../../types'
 
 // ── Mapeamento de domínios YSQ (espelha ysq_taxonomy.dart) ───────────────────
 
@@ -82,6 +82,106 @@ function topByScore(results: PatientQuestionnaireResultRow[], prefix: string, li
     .map((r) => ({ ...r, _score: r.professional_average_score ?? r.average_score ?? 0 }))
     .sort((a, b) => b._score - a._score)
     .slice(0, limit)
+}
+
+// ── TDE pattern labels (espelha life_story_deepen_enums.dart) ────────────────
+
+const EMOTIONAL_NEED_LABELS: Record<string, string> = {
+  presence: 'Presença / companhia', safety: 'Segurança', acceptance: 'Aceitação',
+  affection: 'Afeto', validation: 'Validação', autonomy: 'Autonomia',
+  limits: 'Limites', play: 'Espontaneidade', guidance: 'Orientação',
+}
+
+const COPING_LABELS: Record<string, string> = {
+  avoidance: 'Evitação', surrender: 'Capitulação', overcompensation: 'Supercompensação',
+  isolation: 'Isolamento', intellectualization: 'Intelectualização',
+  emotional_suppression: 'Supressão emocional', self_blame: 'Autocrítica',
+  aggression: 'Agressão / raiva', dependency: 'Busca de aprovação',
+}
+
+const PRESENT_AREA_LABELS: Record<string, string> = {
+  self_view: 'Como me vejo', relationships: 'Relacionamentos', work: 'Trabalho / Estudo',
+  health: 'Saúde', family: 'Família', leisure: 'Lazer', spirituality: 'Espiritualidade',
+}
+
+function topKeys(events: PatientTimelineEventRow[], getKeys: (e: PatientTimelineEventRow) => string[] | null | undefined, limit = 3) {
+  const counts: Record<string, number> = {}
+  for (const event of events) {
+    for (const key of getKeys(event) ?? []) {
+      counts[key] = (counts[key] ?? 0) + 1
+    }
+  }
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+}
+
+function TdePatterns({ events }: { events: PatientTimelineEventRow[] }) {
+  const eventsWithTde = events.filter((e) =>
+    (e.emotional_need_keys?.length ?? 0) > 0 ||
+    (e.coping_keys?.length ?? 0) > 0 ||
+    (e.present_area_keys?.length ?? 0) > 0,
+  )
+  if (eventsWithTde.length < 2) return null
+
+  const topNeeds = topKeys(events, (e) => e.emotional_need_keys)
+  const topCoping = topKeys(events, (e) => e.coping_keys)
+  const topAreas = topKeys(events, (e) => e.present_area_keys)
+
+  if (!topNeeds.length && !topCoping.length && !topAreas.length) return null
+
+  return (
+    <div className="clinical-core-section">
+      <span className="clinical-core-section-title">
+        <Layers size={14} aria-hidden="true" style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} />
+        Padrões da linha de vida
+        <span style={{ fontSize: 'var(--text-caption)', color: 'var(--text-muted)', fontWeight: 'normal', marginLeft: 8 }}>
+          ({eventsWithTde.length} eventos com aprofundamento)
+        </span>
+      </span>
+      <div className="clinical-core-grid">
+        {topNeeds.length > 0 && (
+          <div className="clinical-core-block">
+            <span className="clinical-core-label">Necessidades frequentes</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+              {topNeeds.map(([key, count]) => (
+                <div key={key} className="clinical-core-mode-row">
+                  <span className="clinical-core-score-name">{EMOTIONAL_NEED_LABELS[key] ?? key}</span>
+                  <Badge tone="info">{count}×</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {topCoping.length > 0 && (
+          <div className="clinical-core-block">
+            <span className="clinical-core-label">Estratégias de coping</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+              {topCoping.map(([key, count]) => (
+                <div key={key} className="clinical-core-mode-row">
+                  <span className="clinical-core-score-name">{COPING_LABELS[key] ?? key}</span>
+                  <Badge tone="warning">{count}×</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {topAreas.length > 0 && (
+          <div className="clinical-core-block">
+            <span className="clinical-core-label">Áreas de vida afetadas</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+              {topAreas.map(([key, count]) => (
+                <div key={key} className="clinical-core-mode-row">
+                  <span className="clinical-core-score-name">{PRESENT_AREA_LABELS[key] ?? key}</span>
+                  <Badge tone="neutral">{count}×</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 // ── Clinical Core sub-components ──────────────────────────────────────────────
@@ -233,6 +333,9 @@ export function PatientMentalMapSummary({ data }: { data: PatientDetailData }) {
           <span>{data.checkIns.length + data.dailyMonitors.length} registro(s) de acompanhamento</span>
         </section>
       </div>
+
+      {/* Padrões TDE da linha de vida */}
+      <TdePatterns events={data.timelineEvents} />
 
       {/* Perfil clínico — apenas quando há dados de questionários */}
       {hasSchemaData && (
