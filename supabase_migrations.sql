@@ -65,9 +65,55 @@ CREATE INDEX IF NOT EXISTS idx_timeline_beliefs_patient
 
 
 -- -----------------------------------------------------------------------------
--- RLS sugerida (adaptar conforme política existente no projeto)
+-- RLS sugerida para as tabelas novas (adaptar conforme política existente)
 -- -----------------------------------------------------------------------------
 -- ALTER TABLE patient_life_chapters    ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE patient_timeline_beliefs ENABLE ROW LEVEL SECURITY;
 -- Aplicar as mesmas políticas de leitura/escrita dos demais patient_* tables.
 -- -----------------------------------------------------------------------------
+
+
+-- =============================================================================
+-- CORREÇÃO URGENTE — RLS em questionnaire_answers
+-- =============================================================================
+-- O painel web apresenta "permission denied for table questionnaire_answers"
+-- ao abrir pacientes que possuem questionários respondidos.
+-- Isso indica que a tabela tem RLS habilitada mas não existe política SELECT
+-- para o role do terapeuta autenticado.
+--
+-- Execute o bloco abaixo no SQL Editor do Supabase Dashboard para corrigir:
+-- =============================================================================
+
+-- 1. Confirma que RLS está ativo (normalmente já está)
+ALTER TABLE questionnaire_answers ENABLE ROW LEVEL SECURITY;
+
+-- 2. Política de leitura: terapeuta vê apenas respostas dos seus pacientes
+CREATE POLICY "Therapist can read answers for own patients"
+  ON questionnaire_answers
+  FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM questionnaire_responses qr
+      JOIN patients p ON p.id = qr.patient_id
+      WHERE qr.id = questionnaire_answers.response_id
+        AND p.responsible_psychologist_id = auth.uid()
+    )
+  );
+
+-- 3. (Opcional) Se clínicas têm múltiplos psicólogos com acesso compartilhado,
+--    adicione também uma política baseada em clinic_id:
+-- CREATE POLICY "Clinic members can read answers"
+--   ON questionnaire_answers
+--   FOR SELECT
+--   USING (
+--     EXISTS (
+--       SELECT 1
+--       FROM questionnaire_responses qr
+--       JOIN patients p ON p.id = qr.patient_id
+--       JOIN clinic_members cm ON cm.clinic_id = p.clinic_id
+--       WHERE qr.id = questionnaire_answers.response_id
+--         AND cm.user_id = auth.uid()
+--     )
+--   );
+-- =============================================================================

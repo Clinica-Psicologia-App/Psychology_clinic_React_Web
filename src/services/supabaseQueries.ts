@@ -1724,7 +1724,9 @@ export async function getPatientDetail(patientId: string): Promise<PatientDetail
       : { data: [], error: null },
   ])
   throwIfError(responseResultsResult.error)
-  throwIfError(responseAnswersResult.error)
+  // questionnaire_answers pode retornar "permission denied" se a RLS ainda não estiver configurada.
+  // Silencia o erro para não quebrar a página — answers ficam vazias mas o resto carrega normalmente.
+  // Solução definitiva: adicionar política RLS no Supabase (ver supabase_migrations.sql).
 
   const questionnairesById = new Map((questionnairesResult.data ?? []).map((questionnaire) => [
     questionnaire.id as string,
