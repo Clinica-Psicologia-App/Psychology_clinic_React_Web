@@ -426,9 +426,13 @@ export type PatientCheckInRow = {
   patient_id?: string
   created_by?: string | null
   mood_score?: number | null
+  mood_emotions?: string[] | null
   anxiety_score?: number | null
   energy_score?: number | null
+  sleep_score?: number | null
+  stress_score?: number | null
   problem_intensity_score?: number | null
+  selected_modes?: Array<{ family: string; clinical_name: string; patient_label: string; nickname?: string | null }> | null
   notes?: string | null
   checked_in_at: string
   created_at?: string | null
@@ -458,6 +462,17 @@ export type PatientTimelineEventRow = {
   period_label?: string | null
   category?: string | null
   emotional_impact?: number | null
+  emotional_need_keys?: string[] | null
+  emotional_need_other?: string | null
+  emotions_felt?: string | null
+  self_meaning?: string | null
+  others_meaning?: string | null
+  world_meaning?: string | null
+  coping_keys?: string[] | null
+  coping_other?: string | null
+  present_influence?: number | null
+  present_area_keys?: string[] | null
+  present_reaction?: string | null
   is_sensitive: boolean
   created_at: string
   updated_at?: string | null

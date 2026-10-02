@@ -8,11 +8,53 @@ import { formatDate } from '../../lib/format'
 import { createPatientTimelineEvent, deletePatientTimelineEvent, getPatientGenogram, listTimelineEventNotes, listTimelineEventPeople, updatePatientTimelineEvent } from '../../services/supabaseQueries'
 import type { PatientDetailData, PatientTimelineEventRow } from '../../types'
 
+const EMOTIONAL_NEED_LABELS: Record<string, string> = {
+  presence: 'Sentir que alguém estaria comigo',
+  safety: 'Sentir-me seguro(a)',
+  affection: 'Receber carinho e atenção',
+  understanding: 'Ser ouvido(a) e compreendido(a)',
+  acceptance: 'Ser aceito(a) como eu era',
+  expression: 'Poder falar sobre o que sentia',
+  autonomy: 'Ter liberdade para ser eu mesmo(a)',
+  encouragement: 'Receber incentivo e confiança',
+  limits: 'Ter limites e orientação',
+  play: 'Poder brincar, descansar ou me divertir',
+  dont_know: 'Não sei',
+  other: 'Outro',
+}
+
+const COPING_LABELS: Record<string, string> = {
+  avoidance: 'Me afastei / evitei sentir',
+  surrender_adaptation: 'Aceitei e busquei me adaptar',
+  overcompensation_reaction: 'Explodi / reagi',
+  emotional_shutdown: 'Desliguei emocionalmente',
+  help_protection: 'Procurei ajuda / proteção',
+  perfectionism: 'Tentei "ser perfeito(a)"',
+  other: 'Outro',
+}
+
+const PRESENT_AREA_LABELS: Record<string, string> = {
+  self_view: 'Como me vejo',
+  relationships: 'Meus relacionamentos',
+  family: 'Minha família',
+  emotions: 'Minhas emoções',
+  work: 'Meu trabalho ou estudos',
+  choices: 'Minhas escolhas',
+  coping: 'Minha maneira de lidar com dificuldades',
+  other: 'Outro',
+}
+
+function resolveKeys(keys: string[] | null | undefined, labels: Record<string, string>): string {
+  if (!keys?.length) return ''
+  return keys.map((k) => labels[k] ?? k).join(' · ')
+}
+
 type TimelineForm = {
   id?: string
   title: string
   description: string
   event_date: string
+  period_label: string
   category: string
   emotional_impact: string
   is_sensitive: boolean
@@ -22,6 +64,7 @@ const emptyTimelineEvent: TimelineForm = {
   title: '',
   description: '',
   event_date: '',
+  period_label: '',
   category: 'processo_terapeutico',
   emotional_impact: '',
   is_sensitive: false,
@@ -41,6 +84,7 @@ function toForm(event: PatientTimelineEventRow): TimelineForm {
     title: event.title,
     description: event.description ?? '',
     event_date: event.event_date?.slice(0, 10) ?? '',
+    period_label: event.period_label ?? '',
     category: event.category ?? 'processo_terapeutico',
     emotional_impact: event.emotional_impact == null ? '' : String(event.emotional_impact),
     is_sensitive: event.is_sensitive,
@@ -52,6 +96,56 @@ function clampImpact(value: string) {
   const number = Number(value)
   if (Number.isNaN(number)) return null
   return Math.max(0, Math.min(10, Math.round(number)))
+}
+
+function TdeSection({ event }: { event: PatientTimelineEventRow }) {
+  const hasTde = event.emotions_felt ||
+    event.emotional_need_keys?.length ||
+    event.self_meaning || event.others_meaning || event.world_meaning ||
+    event.coping_keys?.length ||
+    event.present_area_keys?.length || event.present_reaction
+
+  if (!hasTde) return null
+
+  return (
+    <div style={{ marginTop: 'var(--space-3)', padding: 'var(--space-3)', background: 'var(--surface-subtle, rgba(0,0,0,0.03))', borderRadius: 'var(--radius-sm)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+      <span style={{ fontSize: 'var(--text-caption)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', opacity: 0.7 }}>Preenchido pelo paciente</span>
+      {event.emotions_felt ? (
+        <p style={{ margin: 0, fontSize: 'var(--text-supporting)' }}>
+          <strong>O que sentia: </strong>{event.emotions_felt}
+        </p>
+      ) : null}
+      {event.emotional_need_keys?.length ? (
+        <p style={{ margin: 0, fontSize: 'var(--text-supporting)' }}>
+          <strong>Necessidade emocional: </strong>{resolveKeys(event.emotional_need_keys, EMOTIONAL_NEED_LABELS)}{event.emotional_need_other ? ` — ${event.emotional_need_other}` : ''}
+        </p>
+      ) : null}
+      {(event.self_meaning || event.others_meaning || event.world_meaning) ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <span style={{ fontSize: 'var(--text-caption)', fontWeight: 600, color: 'var(--text-muted)' }}>Triângulo cognitivo</span>
+          {event.self_meaning ? <p style={{ margin: 0, fontSize: 'var(--text-supporting)' }}><strong>Eu: </strong>{event.self_meaning}</p> : null}
+          {event.others_meaning ? <p style={{ margin: 0, fontSize: 'var(--text-supporting)' }}><strong>Os outros: </strong>{event.others_meaning}</p> : null}
+          {event.world_meaning ? <p style={{ margin: 0, fontSize: 'var(--text-supporting)' }}><strong>O mundo: </strong>{event.world_meaning}</p> : null}
+        </div>
+      ) : null}
+      {event.coping_keys?.length ? (
+        <p style={{ margin: 0, fontSize: 'var(--text-supporting)' }}>
+          <strong>Como lidou: </strong>{resolveKeys(event.coping_keys, COPING_LABELS)}{event.coping_other ? ` — ${event.coping_other}` : ''}
+        </p>
+      ) : null}
+      {event.present_area_keys?.length ? (
+        <p style={{ margin: 0, fontSize: 'var(--text-supporting)' }}>
+          <strong>Ainda influencia: </strong>{resolveKeys(event.present_area_keys, PRESENT_AREA_LABELS)}
+          {event.present_influence != null ? ` (${event.present_influence}/10)` : ''}
+        </p>
+      ) : null}
+      {event.present_reaction ? (
+        <p style={{ margin: 0, fontSize: 'var(--text-supporting)' }}>
+          <strong>Reação atual: </strong>{event.present_reaction}
+        </p>
+      ) : null}
+    </div>
+  )
 }
 
 export function PatientTimelineManager({ data, onChanged }: {
@@ -114,6 +208,7 @@ export function PatientTimelineManager({ data, onChanged }: {
         title: input.title,
         description: input.description,
         event_date: input.event_date,
+        period_label: input.period_label,
         category: input.category,
         emotional_impact: clampImpact(input.emotional_impact),
         is_sensitive: input.is_sensitive,
@@ -174,7 +269,7 @@ export function PatientTimelineManager({ data, onChanged }: {
                   <span style={{ width: `${impact * 10}%` }} />
                 </div>
                 <div className="goal-meta-row">
-                  <span>{event.event_date ? formatDate(event.event_date) : 'Sem data'}</span>
+                  <span>{event.event_date ? formatDate(event.event_date) : (event.period_label ?? 'Sem data')}</span>
                   <span>{categoryLabels[event.category ?? ''] ?? event.category ?? 'Sem categoria'}</span>
                   <span>Impacto {event.emotional_impact ?? '—'}/10</span>
                   {event.is_sensitive ? <span><LockKeyhole size={13} aria-hidden="true" /> Conteúdo sensível</span> : null}
@@ -192,6 +287,7 @@ export function PatientTimelineManager({ data, onChanged }: {
                     {notesByEvent.get(event.id)}
                   </p>
                 ) : null}
+                <TdeSection event={event} />
                 <div className="table-actions">
                   <Button variant="ghost" size="sm" onClick={() => setForm(toForm(event))}><Edit3 size={15} aria-hidden="true" /> Editar</Button>
                   <Button
@@ -227,6 +323,7 @@ export function PatientTimelineManager({ data, onChanged }: {
             <div className="form-grid two">
               <label className="span-two">Título<input autoFocus value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} required /></label>
               <label>Data do evento<input type="date" value={form.event_date} onChange={(event) => setForm({ ...form, event_date: event.target.value })} /></label>
+              <label>Período (se sem data exata)<input placeholder="ex: Infância, Adolescência" value={form.period_label} onChange={(event) => setForm({ ...form, period_label: event.target.value })} /></label>
               <label>Categoria<select value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })}>
                 <option value="processo_terapeutico">Processo terapêutico</option>
                 <option value="historia_de_vida">História de vida</option>
@@ -234,8 +331,8 @@ export function PatientTimelineManager({ data, onChanged }: {
                 <option value="saude">Saúde</option>
                 <option value="trabalho_estudo">Trabalho ou estudo</option>
               </select></label>
-              <label className="span-two">Descrição<textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></label>
               <label>Impacto emocional<input type="number" min="0" max="10" value={form.emotional_impact} onChange={(event) => setForm({ ...form, emotional_impact: event.target.value })} /></label>
+              <label className="span-two">Descrição<textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></label>
               <label className="check-row"><input type="checkbox" checked={form.is_sensitive} onChange={(event) => setForm({ ...form, is_sensitive: event.target.checked })} /> Conteúdo sensível</label>
             </div>
             <footer>

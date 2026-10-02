@@ -1659,9 +1659,9 @@ export async function getPatientDetail(patientId: string): Promise<PatientDetail
       .order('created_at', { ascending: false }),
     client.from('patient_problems').select('id, clinic_id, patient_id, created_by, title, description, category, intensity, status, identified_at, resolved_at, created_at, updated_at').eq('patient_id', patientId).order('updated_at', { ascending: false }),
     client.from('therapy_goals').select('id, clinic_id, patient_id, created_by, title, description, status, target_date, completed_at, progress, linked_schemas, created_at, updated_at').eq('patient_id', patientId).order('updated_at', { ascending: false }),
-    client.from('patient_check_ins').select('id, mood_score, anxiety_score, energy_score, problem_intensity_score, notes, checked_in_at').eq('patient_id', patientId).order('checked_in_at', { ascending: false }).limit(30),
+    client.from('patient_check_ins').select('id, mood_score, mood_emotions, anxiety_score, energy_score, sleep_score, stress_score, problem_intensity_score, selected_modes, notes, checked_in_at').eq('patient_id', patientId).order('checked_in_at', { ascending: false }).limit(30),
     client.from('daily_monitors').select('id, mood_notes, sleep_notes, activity_notes, emotion_notes, created_at').eq('patient_id', patientId).order('created_at', { ascending: false }).limit(30),
-    client.from('patient_timeline_events').select('id, clinic_id, patient_id, created_by, title, description, event_date, period_label, category, emotional_impact, is_sensitive, created_at, updated_at').eq('patient_id', patientId).order('event_date', { ascending: false, nullsFirst: false }).limit(50),
+    client.from('patient_timeline_events').select('id, clinic_id, patient_id, created_by, title, description, event_date, period_label, category, emotional_impact, emotional_need_keys, emotional_need_other, emotions_felt, self_meaning, others_meaning, world_meaning, coping_keys, coping_other, present_influence, present_area_keys, present_reaction, is_sensitive, created_at, updated_at').eq('patient_id', patientId).order('event_date', { ascending: false, nullsFirst: false }).limit(50),
     client.from('patient_questionnaire_assignments').select('id, questionnaire_id, assigned_by_profile_id, assigned_at, message, response_id, cancelled_at').eq('patient_id', patientId).order('assigned_at', { ascending: false }),
     client
       .from('audit_events')
@@ -2182,7 +2182,7 @@ export async function getPatientPortalMonitoring() {
   const [checkInsResult, dailyMonitorsResult] = await Promise.all([
     client
       .from('patient_check_ins')
-      .select('id, clinic_id, patient_id, created_by, mood_score, anxiety_score, energy_score, problem_intensity_score, notes, checked_in_at, created_at, updated_at')
+      .select('id, clinic_id, patient_id, created_by, mood_score, mood_emotions, anxiety_score, energy_score, sleep_score, stress_score, problem_intensity_score, selected_modes, notes, checked_in_at, created_at, updated_at')
       .eq('patient_id', patientId)
       .order('checked_in_at', { ascending: false })
       .limit(30),
@@ -2462,6 +2462,7 @@ export async function createPatientTimelineEvent(input: {
   title: string
   description?: string
   event_date?: string
+  period_label?: string
   category?: string
   emotional_impact?: number | null
   is_sensitive?: boolean
@@ -2472,6 +2473,7 @@ export async function createPatientTimelineEvent(input: {
     title: input.title.trim(),
     description: input.description?.trim() || null,
     event_date: input.event_date || null,
+    period_label: input.period_label?.trim() || null,
     category: input.category || null,
     emotional_impact: input.emotional_impact ?? null,
     is_sensitive: Boolean(input.is_sensitive),
@@ -2484,6 +2486,7 @@ export async function updatePatientTimelineEvent(input: {
   title: string
   description?: string
   event_date?: string
+  period_label?: string
   category?: string
   emotional_impact?: number | null
   is_sensitive?: boolean
@@ -2494,6 +2497,7 @@ export async function updatePatientTimelineEvent(input: {
       title: input.title.trim(),
       description: input.description?.trim() || null,
       event_date: input.event_date || null,
+      period_label: input.period_label?.trim() || null,
       category: input.category || null,
       emotional_impact: input.emotional_impact ?? null,
       is_sensitive: Boolean(input.is_sensitive),
