@@ -3581,6 +3581,21 @@
 .schema-note { font-size: var(--text-caption); color: var(--text-secondary); margin: 0; line-height: 1.45; border-top: 1px solid var(--border-subtle); padding-top: var(--space-2); }
 .schema-history-details summary { font-size: var(--text-supporting); color: var(--text-muted); cursor: pointer; padding: var(--space-2) 0; }
 
+/* ── Domínios Young (YSQ) ─────────────────────────────────────────────────── */
+.ysq-domain-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-3); margin-bottom: var(--space-4); }
+.ysq-domain-card { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-3); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--surface-primary); opacity: .5; }
+.ysq-domain-card.active { opacity: 1; border-color: var(--color-brand-teal, #0f9c90); }
+.ysq-domain-numeral { font-weight: 800; font-size: var(--text-body); color: var(--color-brand-teal, #0f9c90); }
+.ysq-domain-name { font-size: var(--text-caption); font-weight: 600; color: var(--text-body); line-height: 1.3; }
+.ysq-domain-bar-bg { height: 4px; background: var(--surface-secondary); border-radius: 2px; overflow: hidden; }
+.ysq-domain-bar-fill { height: 100%; background: var(--color-brand-teal, #0f9c90); border-radius: 2px; transition: width .3s; }
+.ysq-domain-stat { font-size: var(--text-caption); color: var(--text-muted); }
+.ysq-domain-stat.muted { opacity: .5; }
+.ysq-callout { display: flex; flex-direction: column; gap: 2px; padding: var(--space-3) var(--space-4); border-left: 3px solid var(--color-brand-teal, #0f9c90); background: color-mix(in srgb, var(--color-brand-teal, #0f9c90) 8%, transparent); border-radius: 0 var(--radius-md) var(--radius-md) 0; margin-bottom: var(--space-4); }
+.ysq-callout-label { font-size: var(--text-caption); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--color-brand-teal, #0f9c90); }
+.ysq-callout strong { font-size: var(--text-supporting); color: var(--text-body); }
+.ysq-callout span { font-size: var(--text-caption); color: var(--text-secondary); }
+
 /* ── Conceitualização (novos estilos) ─────────────────────────────────────── */
 .conceptualization-section { margin-bottom: var(--space-6); }
 .conceptualization-section h3 { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-body); font-weight: 600; color: var(--color-brand-navy); margin-bottom: var(--space-4); padding-bottom: var(--space-2); border-bottom: 1px solid var(--border-subtle); }
@@ -3615,6 +3630,7 @@
   .relationship-grid, .impressions-grid { grid-template-columns: 1fr; }
   .schema-activations-grid { grid-template-columns: 1fr; }
   .mode-step { grid-template-columns: 1fr; gap: 2px; }
+  .ysq-domain-row { grid-template-columns: 1fr 1fr; }
 }
 
 /* ── Completude clínica ────────────────────────────────────────────────────── */
