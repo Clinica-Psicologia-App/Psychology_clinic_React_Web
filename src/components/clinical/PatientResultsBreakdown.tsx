@@ -144,10 +144,11 @@ function SchemaBarSection({ results }: { results: PatientQuestionnaireResultRow[
             axisLine={false}
           />
           <Tooltip
-            formatter={(value: number, _name: string, props: { payload?: SchemaBarEntry }) => [
-              `${formatNumber(value)} / 6`,
-              props.payload?.activated ? '● Ativado' : '○ Inativo',
-            ]}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            formatter={((value: unknown, _name: unknown, props: any) => [
+              `${formatNumber(typeof value === 'number' ? value : 0)} / 6`,
+              (props?.payload as SchemaBarEntry | undefined)?.activated ? '● Ativado' : '○ Inativo',
+            ]) as any}
             labelStyle={{ fontSize: 12, fontWeight: 600 }}
             contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid var(--border-subtle)' }}
           />

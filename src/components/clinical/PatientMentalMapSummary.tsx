@@ -214,7 +214,7 @@ function SchemaHighlights({ results }: { results: PatientQuestionnaireResultRow[
   const domainCounts: Record<string, number> = {}
   for (const r of results.filter((x) => x.category_code?.startsWith('YSQ_SCHEMA_'))) {
     const numeral = YSQ_SCHEMA_DOMAIN[r.category_code ?? '']
-    if (numeral) domainCounts[numeral] = (domainCounts[numeral] ?? 0) + (r._score ?? 0)
+    if (numeral) domainCounts[numeral] = (domainCounts[numeral] ?? 0) + (r.professional_average_score ?? r.average_score ?? 0)
   }
   const dominantDomain = Object.entries(domainCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
 
