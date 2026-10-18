@@ -40,6 +40,15 @@ export function LoginPage() {
         <span className="ambient-node node-three" />
       </div>
       <section className="login-hero">
+        <video
+          className="login-hero-video"
+          src="/videos/brain-animation.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+        />
         <div className="brand-card floating login-brand-card">
           <img className="brand-image" src={esquemaCoreIcon} alt="" />
           <div>
