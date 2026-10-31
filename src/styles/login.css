@@ -114,10 +114,11 @@
   object-position: 60% 45%;
   mix-blend-mode: screen;
   opacity: 0.52;
+  filter: brightness(0.72);
   pointer-events: none;
   z-index: 0;
-  mask-image: radial-gradient(ellipse 78% 92% at 58% 50%, black 18%, transparent 68%);
-  -webkit-mask-image: radial-gradient(ellipse 78% 92% at 58% 50%, black 18%, transparent 68%);
+  mask-image: radial-gradient(ellipse 72% 86% at 56% 48%, black 22%, transparent 56%);
+  -webkit-mask-image: radial-gradient(ellipse 72% 86% at 56% 48%, black 22%, transparent 56%);
 }
 
 .login-brand-card {
