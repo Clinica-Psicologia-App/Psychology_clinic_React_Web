@@ -25,6 +25,7 @@ import { PatientFamilyContextPanel } from '../components/clinical/PatientFamilyC
 import { PatientSchemaActivationsPanel } from '../components/clinical/PatientSchemaActivationsPanel'
 import { PatientCaseConceptualizationManager } from '../components/clinical/PatientCaseConceptualizationManager'
 import { PatientClinicalHypothesesPanel } from '../components/clinical/PatientClinicalHypothesesPanel'
+import { PatientClinicalDashboardPanel } from '../components/clinical/PatientClinicalDashboardPanel'
 import { PatientCompletenessPanel } from '../components/clinical/PatientCompletenessPanel'
 import { PatientInfographicPanel } from '../components/clinical/PatientInfographicPanel'
 import { PatientPersonalityManager } from '../components/clinical/PatientPersonalityManager'
@@ -224,6 +225,7 @@ export function PatientDetailPage() {
             {/* Visão Geral */}
             {activeTab === 'overview' && (
               <div className="patient-tab-panel">
+                <PatientClinicalDashboardPanel data={data} />
                 <PatientCompletenessPanel data={data} />
                 <PatientInfographicPanel data={data} />
                 <PatientClinicalReportPanel data={data} />

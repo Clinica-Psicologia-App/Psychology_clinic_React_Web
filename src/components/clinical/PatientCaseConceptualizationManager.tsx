@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
-import { Activity, BrainCircuit, Heart, Layers, RefreshCw, Stethoscope, TreePine, Users } from 'lucide-react'
+import { Activity, BrainCircuit, FileDown, FileText, Heart, Layers, RefreshCw, Stethoscope, TreePine, Users } from 'lucide-react'
 import { Badge } from '../design-system/Badge'
+import { Button } from '../design-system/Button'
+import { exportCaseConceptualizationPdf, exportCaseConceptualizationWord } from '../../lib/caseConceptualizationExport'
 import { EmptyState } from '../design-system/EmptyState'
 import { getCaseConceptualization } from '../../services/supabaseQueries'
 import type {
@@ -258,6 +260,16 @@ export function PatientCaseConceptualizationManager({ data }: { data: PatientDet
           <p>Formulação em Terapia de Esquemas: necessidades, modos, origens, diagnóstico e aliança terapêutica.</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--text-muted)', fontSize: 'var(--text-caption)' }}>
+          {hasContent && cc ? (
+            <>
+              <Button variant="ghost" size="sm" onClick={() => exportCaseConceptualizationPdf(cc, data.patient.full_name)}>
+                <FileDown size={14} aria-hidden="true" /> PDF
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => exportCaseConceptualizationWord(cc, data.patient.full_name)}>
+                <FileText size={14} aria-hidden="true" /> Word
+              </Button>
+            </>
+          ) : null}
           <RefreshCw size={13} />
           Preenchido no aplicativo
         </div>
