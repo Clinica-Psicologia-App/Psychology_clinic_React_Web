@@ -2215,6 +2215,37 @@ export async function getPatientPortalMonitoring() {
   }
 }
 
+export type PatientHealthyResourcesRow = {
+  selected_predefined: string[]
+  custom_resources: string[]
+  observations: string | null
+  updated_at: string | null
+}
+
+export async function getPatientHealthyResources(patientId: string): Promise<PatientHealthyResourcesRow | null> {
+  const client = getSupabase()
+  const { data: userData, error: userError } = await client.auth.getUser()
+  throwIfError(userError)
+  const userId = userData.user?.id
+  if (!userId) throw new Error('Sessão não encontrada.')
+
+  const { data, error } = await client
+    .from('patient_healthy_resources')
+    .select('selected_predefined, custom_resources, observations, updated_at')
+    .eq('patient_id', patientId)
+    .eq('psychologist_id', userId)
+    .limit(1)
+  throwIfError(error)
+  const row = data?.[0]
+  if (!row) return null
+  return {
+    selected_predefined: (row.selected_predefined as string[] | null) ?? [],
+    custom_resources: (row.custom_resources as string[] | null) ?? [],
+    observations: (row.observations as string | null) ?? null,
+    updated_at: (row.updated_at as string | null) ?? null,
+  }
+}
+
 export async function getPatientPortalPlan() {
   const client = getSupabase()
   const { patientId } = await getCurrentPatientContext(client)

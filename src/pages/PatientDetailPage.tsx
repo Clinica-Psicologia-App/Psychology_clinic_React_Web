@@ -26,6 +26,7 @@ import { PatientSchemaActivationsPanel } from '../components/clinical/PatientSch
 import { PatientCaseConceptualizationManager } from '../components/clinical/PatientCaseConceptualizationManager'
 import { PatientClinicalHypothesesPanel } from '../components/clinical/PatientClinicalHypothesesPanel'
 import { PatientClinicalDashboardPanel } from '../components/clinical/PatientClinicalDashboardPanel'
+import { PatientHealthyResourcesPanel } from '../components/clinical/PatientHealthyResourcesPanel'
 import { PatientCompletenessPanel } from '../components/clinical/PatientCompletenessPanel'
 import { PatientInfographicPanel } from '../components/clinical/PatientInfographicPanel'
 import { PatientPersonalityManager } from '../components/clinical/PatientPersonalityManager'
@@ -238,6 +239,7 @@ export function PatientDetailPage() {
                 <ClinicalIntelligence data={data} onChanged={() => refetch()} />
                 <PatientInitialAssessmentManager data={data} onChanged={() => refetch()} />
                 <PatientInitialAssessmentPanel data={data} />
+                <PatientHealthyResourcesPanel data={data} />
                 <PatientMentalMapSummary data={data} />
               </div>
             )}
