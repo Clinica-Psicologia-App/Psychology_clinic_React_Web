@@ -16,6 +16,7 @@ import {
   LogOut,
   MailPlus,
   Menu,
+  Route,
   Search,
   Settings,
   Users,
@@ -70,6 +71,7 @@ function buildNavGroups(profile: AdminProfile | null): NavGroup[] {
       {
         label: 'Minha área',
         items: [
+          { to: '/minha-jornada', label: 'Minha jornada', icon: Route },
           { to: '/meu-painel', label: 'Meu painel', icon: LayoutDashboard },
           { to: '/minha-avaliacao-inicial', label: 'Avaliação inicial', icon: ClipboardCheck },
           { to: '/meus-questionarios', label: 'Questionários', icon: ClipboardList, feature: 'questionnaires' },
@@ -134,6 +136,7 @@ const routeLabels: Record<string, string> = {
   '/clinicas': 'Clínicas',
   '/usuarios': 'Usuários',
   '/visao-pacientes': 'Visão agregada de pacientes',
+  '/minha-jornada': 'Minha jornada',
   '/meu-painel': 'Meu painel',
   '/minha-avaliacao-inicial': 'Minha avaliação inicial',
   '/meus-questionarios': 'Meus questionários',

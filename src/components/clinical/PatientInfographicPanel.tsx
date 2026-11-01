@@ -2,17 +2,17 @@ import { Activity, BarChart3, ClipboardCheck, HeartPulse, Route, Sparkles, Targe
 import { Badge } from '../design-system/Badge'
 import type { PatientDetailData } from '../../types'
 
-function pct(part: number, total: number) {
+export function pct(part: number, total: number) {
   if (!total) return 0
   return Math.max(0, Math.min(100, Math.round((part / total) * 100)))
 }
 
-function average(values: Array<number | null | undefined>) {
+export function average(values: Array<number | null | undefined>) {
   const valid = values.filter((value): value is number => typeof value === 'number')
   return valid.length ? Math.round((valid.reduce((sum, value) => sum + value, 0) / valid.length) * 10) / 10 : null
 }
 
-function ProgressRing({ value, label }: { value: number; label: string }) {
+export function ProgressRing({ value, label }: { value: number; label: string }) {
   return (
     <div className="infographic-ring" style={{ background: `conic-gradient(var(--color-brand-accent) ${value * 3.6}deg, var(--bg-muted) 0deg)` }}>
       <div>
@@ -23,7 +23,7 @@ function ProgressRing({ value, label }: { value: number; label: string }) {
   )
 }
 
-function MetricBar({ label, value, max = 10, tone = 'default' }: {
+export function MetricBar({ label, value, max = 10, tone = 'default' }: {
   label: string
   value: number | null
   max?: number

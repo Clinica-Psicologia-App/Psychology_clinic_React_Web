@@ -36,6 +36,7 @@ const PatientTimelinePage = lazy(() => import('./pages/PatientTimelinePage').the
 const PatientFamilyPage = lazy(() => import('./pages/PatientFamilyPage').then((module) => ({ default: module.PatientFamilyPage })))
 const UserProfilePage = lazy(() => import('./pages/UserProfilePage').then((module) => ({ default: module.UserProfilePage })))
 const PatientResourcesPage = lazy(() => import('./pages/PatientResourcesPage').then((module) => ({ default: module.PatientResourcesPage })))
+const PatientJourneyPage = lazy(() => import('./pages/PatientJourneyPage').then((module) => ({ default: module.PatientJourneyPage })))
 const PatientClinicalDashboardPage = lazy(() => import('./pages/PatientClinicalDashboardPage').then((module) => ({ default: module.PatientClinicalDashboardPage })))
 const PatientPortalResultsPage = lazy(() => import('./pages/PatientPortalResultsPage').then((module) => ({ default: module.PatientPortalResultsPage })))
 const PatientsPage = lazy(() => import('./pages/PatientsPage').then((module) => ({ default: module.PatientsPage })))
@@ -129,6 +130,7 @@ export default function App() {
           <Route path="minha-linha-do-tempo" element={<PatientOnly><PatientTimelinePage /></PatientOnly>} />
           <Route path="minha-familia" element={<PatientOnly><PatientFamilyPage /></PatientOnly>} />
           <Route path="perfil" element={<UserProfilePage />} />
+          <Route path="minha-jornada" element={<PatientOnly><PatientJourneyPage /></PatientOnly>} />
           <Route path="meu-painel" element={<PatientOnly><PatientClinicalDashboardPage /></PatientOnly>} />
           <Route path="meus-resultados" element={<PatientOnly><FeatureOnly feature="questionnaires"><PatientPortalResultsPage /></FeatureOnly></PatientOnly>} />
           <Route path="questionarios" element={<AdminOnly><FeatureOnly feature="questionnaires"><QuestionnairesPage /></FeatureOnly></AdminOnly>} />
