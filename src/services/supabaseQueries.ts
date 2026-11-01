@@ -2215,6 +2215,28 @@ export async function getPatientPortalMonitoring() {
   }
 }
 
+export async function getPatientPortalPlan() {
+  const client = getSupabase()
+  const { patientId } = await getCurrentPatientContext(client)
+  const [problemsResult, goalsResult] = await Promise.all([
+    client
+      .from('patient_problems')
+      .select('id, patient_id, title, description, category, intensity, status, identified_at, resolved_at, created_at, updated_at')
+      .eq('patient_id', patientId)
+      .order('created_at', { ascending: false }),
+    client
+      .from('therapy_goals')
+      .select('id, patient_id, title, description, status, target_date, completed_at, progress, created_at, updated_at')
+      .eq('patient_id', patientId)
+      .order('created_at', { ascending: false }),
+  ])
+  // Política de leitura do paciente pode não existir ainda: degrada para vazio em vez de quebrar a página.
+  return {
+    problems: (problemsResult.error ? [] : problemsResult.data ?? []) as PatientDetailData['problems'],
+    goals: (goalsResult.error ? [] : goalsResult.data ?? []) as PatientDetailData['goals'],
+  }
+}
+
 export async function getMyPatientCheckIn(checkInId: string) {
   const client = getSupabase()
   const { patientId } = await getCurrentPatientContext(client)

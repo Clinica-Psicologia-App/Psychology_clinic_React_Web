@@ -70,6 +70,7 @@ function buildNavGroups(profile: AdminProfile | null): NavGroup[] {
       {
         label: 'Minha área',
         items: [
+          { to: '/meu-painel', label: 'Meu painel', icon: LayoutDashboard },
           { to: '/minha-avaliacao-inicial', label: 'Avaliação inicial', icon: ClipboardCheck },
           { to: '/meus-questionarios', label: 'Questionários', icon: ClipboardList, feature: 'questionnaires' },
           { to: '/meu-acompanhamento', label: 'Acompanhamento', icon: Activity },
@@ -133,6 +134,7 @@ const routeLabels: Record<string, string> = {
   '/clinicas': 'Clínicas',
   '/usuarios': 'Usuários',
   '/visao-pacientes': 'Visão agregada de pacientes',
+  '/meu-painel': 'Meu painel',
   '/minha-avaliacao-inicial': 'Minha avaliação inicial',
   '/meus-questionarios': 'Meus questionários',
   '/meu-acompanhamento': 'Meu acompanhamento',

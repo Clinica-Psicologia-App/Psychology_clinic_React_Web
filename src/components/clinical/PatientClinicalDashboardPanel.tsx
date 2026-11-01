@@ -49,7 +49,18 @@ function ScoreList({ title, rows, activationAware = false }: { title: string; ro
   )
 }
 
-export function PatientClinicalDashboardPanel({ data }: { data: PatientDetailData }) {
+export type ClinicalDashboardSource = Pick<
+  PatientDetailData,
+  'responses' | 'responseResults' | 'problems' | 'goals' | 'timelineEvents' | 'checkIns'
+>
+
+export function PatientClinicalDashboardPanel({
+  data,
+  audience = 'staff',
+}: {
+  data: ClinicalDashboardSource
+  audience?: 'staff' | 'patient'
+}) {
   const summary = useMemo(() => {
     const resultsByResponse = new Map<string, ScoreRow[]>()
     for (const result of data.responseResults) {
@@ -126,14 +137,18 @@ export function PatientClinicalDashboardPanel({ data }: { data: PatientDetailDat
     <article className="panel clinical-dash-panel">
       <div className="panel-header">
         <div>
-          <span className="eyebrow">Dashboard clínico</span>
-          <h2>Resumo do caso</h2>
-          <p>Destaques consolidados dos últimos resultados concluídos, do plano clínico e do acompanhamento.</p>
+          <span className="eyebrow">{audience === 'patient' ? 'Meu painel' : 'Dashboard clínico'}</span>
+          <h2>{audience === 'patient' ? 'Resumo do meu acompanhamento' : 'Resumo do caso'}</h2>
+          <p>
+            {audience === 'patient'
+              ? 'Destaques dos seus resultados liberados, do seu plano e dos seus registros.'
+              : 'Destaques consolidados dos últimos resultados concluídos, do plano clínico e do acompanhamento.'}
+          </p>
         </div>
         <LayoutDashboard size={20} aria-hidden="true" />
       </div>
 
-      {summary.alerts.length ? (
+      {audience === 'staff' && summary.alerts.length ? (
         <div className="clinical-dash-alerts">
           {summary.alerts.map((message) => (
             <div key={message}><AlertTriangle size={15} aria-hidden="true" /><span>{message}</span></div>
