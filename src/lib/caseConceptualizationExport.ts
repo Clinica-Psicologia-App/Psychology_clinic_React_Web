@@ -59,13 +59,14 @@ export function buildCaseConceptualizationHtml(cc: CaseConceptualizationRow, pat
     : ''
 
   const impressions = `${block('Apresentação inicial', cc.general_impressions?.initial)}${block('Apresentação atual', cc.general_impressions?.current)}`
-  const diagnosis = `${block('Sistema', cc.diagnosis?.system)}${(cc.diagnosis?.items ?? []).filter((d) => d.name).map((d) => `<p>${esc(d.name)}${d.code ? ` (${esc(d.code)})` : ''}</p>`).join('')}`
+  const statusLabel = { investigating: 'Em investigação', established: 'Diagnóstico estabelecido' }
+  const diagnosis = `${block('Sistema', cc.diagnosis?.system)}${cc.diagnosis?.no_diagnosis ? '<p>Sem diagnóstico estabelecido no momento.</p>' : ''}${(cc.diagnosis?.items ?? []).filter((d) => d.name).map((d) => `<div class="card"><strong>${esc(d.name)}</strong>${d.code ? ` (${esc(d.code)})` : ''}${d.system ? ` · ${esc(d.system)}` : ''}${d.status ? ` · ${statusLabel[d.status]}` : ''}${block('Observações', d.notes)}</div>`).join('')}`
   const origins = `${block('História inicial', cc.origins?.early_history)}${block('Fatores temperamentais / biológicos', cc.origins?.temperament)}${block('Fatores culturais, étnicos e religiosos', cc.origins?.cultural)}`
 
   const body = [
-    section('Motivo / queixa (terapeuta)', plain(cc.motivo_notes)),
+    section('Motivos da terapia', `${block('Iniciais', cc.motivo_initial || cc.motivo_notes)}${block('Atuais', cc.motivo_current)}`),
     section('Impressões gerais', impressions),
-    section('Diagnóstico', diagnosis),
+    section('Perspectiva diagnóstica', diagnosis),
     section('Necessidades não atendidas', needs ? `<ul>${needs}</ul>` : ''),
     section('Sequências de modos', modes),
     section('Origens', origins),

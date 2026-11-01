@@ -2694,7 +2694,7 @@ export async function deleteGenogramRelationship(id: string) {
 export async function getCaseConceptualization(patientId: string): Promise<CaseConceptualizationRow | null> {
   const { data, error } = await getSupabase()
     .from('case_conceptualizations')
-    .select('id, patient_id, clinic_id, unmet_needs, mode_sequences, therapeutic_relationship, general_impressions, diagnosis, origins, motivo_notes, additional_comments, updated_at')
+    .select('id, patient_id, clinic_id, unmet_needs, mode_sequences, therapeutic_relationship, general_impressions, diagnosis, origins, motivo_notes, motivo_initial, motivo_current, additional_comments, updated_at')
     .eq('patient_id', patientId)
     .order('updated_at', { ascending: false, nullsFirst: false })
     .limit(1)

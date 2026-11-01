@@ -621,10 +621,16 @@ export type GeneralImpressions = {
 export type DiagnosisItem = {
   name?: string | null
   code?: string | null
+  system?: string | null
+  status?: 'investigating' | 'established' | null
+  notes?: string | null
+  reviewed_on?: string | null
+  updated_by_name?: string | null
 }
 
 export type CaseDiagnosis = {
   system?: string | null   // 'CID-11' | 'DSM-5-TR'
+  no_diagnosis?: boolean
   items?: DiagnosisItem[]
 }
 
@@ -645,6 +651,8 @@ export type CaseConceptualizationRow = {
   diagnosis?: CaseDiagnosis | null
   origins?: CaseOrigins | null
   motivo_notes?: string | null
+  motivo_initial?: string | null
+  motivo_current?: string | null
   additional_comments?: string | null
   updated_at?: string | null
 }

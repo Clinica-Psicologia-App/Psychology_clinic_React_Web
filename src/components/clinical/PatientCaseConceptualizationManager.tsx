@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Activity, BrainCircuit, FileDown, FileText, Heart, Layers, RefreshCw, Stethoscope, TreePine, Users } from 'lucide-react'
 import { Badge } from '../design-system/Badge'
 import { Button } from '../design-system/Button'
+import { formatDate } from '../../lib/format'
 import { exportCaseConceptualizationPdf, exportCaseConceptualizationWord } from '../../lib/caseConceptualizationExport'
 import { EmptyState } from '../design-system/EmptyState'
 import { getCaseConceptualization } from '../../services/supabaseQueries'
@@ -190,15 +191,29 @@ function ImpressionsSection({ impressions }: { impressions?: GeneralImpressions 
 }
 
 function DiagnosisSection({ diagnosis }: { diagnosis?: CaseDiagnosis | null }) {
-  if (!diagnosis || (!diagnosis.system && !diagnosis.items?.length)) return null
+  const items = (diagnosis?.items ?? []).filter((d) => d.name)
+  if (!diagnosis || (!diagnosis.system && !diagnosis.no_diagnosis && !items.length)) return null
   return (
     <section className="conceptualization-section">
-      <h3><Stethoscope size={16} /> Diagnóstico</h3>
+      <h3><Stethoscope size={16} /> Perspectiva diagnóstica</h3>
       {diagnosis.system && <p className="diagnosis-system">{diagnosis.system}</p>}
-      {(diagnosis.items ?? []).filter((d) => d.name).map((d, i) => (
-        <div key={i} className="diagnosis-item">
+      {diagnosis.no_diagnosis && <p className="diagnosis-system">Sem diagnóstico estabelecido no momento.</p>}
+      {items.map((d, i) => (
+        <div key={i} className="diagnosis-item" style={{ flexWrap: 'wrap' }}>
           <span>{d.name}</span>
           {d.code && <Badge tone="neutral">{d.code}</Badge>}
+          {d.system && <Badge tone="neutral">{d.system}</Badge>}
+          {d.status && (
+            <Badge tone={d.status === 'established' ? 'danger' : 'warning'}>
+              {d.status === 'established' ? 'Diagnóstico estabelecido' : 'Em investigação'}
+            </Badge>
+          )}
+          {d.notes && <p className="need-detail" style={{ flexBasis: '100%', margin: 0 }}>{d.notes}</p>}
+          {(d.reviewed_on || d.updated_by_name) && (
+            <small style={{ flexBasis: '100%', color: 'var(--text-muted)' }}>
+              {[d.reviewed_on ? `Revisão em ${formatDate(d.reviewed_on)}` : null, d.updated_by_name ? `por ${d.updated_by_name}` : null].filter(Boolean).join(' ')}
+            </small>
+          )}
         </div>
       ))}
     </section>
@@ -240,7 +255,13 @@ export function PatientCaseConceptualizationManager({ data }: { data: PatientDet
   })
 
   const cc = conceptualization.data
+  const reasonsInitial = cc?.motivo_initial || cc?.motivo_notes
+  const reasonsCurrent = cc?.motivo_current
   const hasContent = cc && (
+    reasonsInitial ||
+    reasonsCurrent ||
+    cc.diagnosis?.no_diagnosis ||
+    cc.general_impressions?.current ||
     (cc.unmet_needs ?? []).some((n) => n.rating && n.rating !== '0') ||
     (cc.mode_sequences ?? []).some((s) => s.trigger || s.activated_modes) ||
     cc.therapeutic_relationship?.collaboration_rating != null ||
@@ -281,18 +302,24 @@ export function PatientCaseConceptualizationManager({ data }: { data: PatientDet
 
       {hasContent && cc ? (
         <div className="conceptualization-board">
-          {(cc.motivo_notes || cc.additional_comments) && (
+          {(reasonsInitial || reasonsCurrent || cc.additional_comments) && (
             <section className="conceptualization-section conceptualization-core">
               <BrainCircuit size={20} aria-hidden="true" />
-              {cc.motivo_notes && (
+              {reasonsInitial && (
                 <>
-                  <strong>Motivo / queixa (terapeuta)</strong>
-                  <p>{cc.motivo_notes}</p>
+                  <strong>Motivos iniciais da procura por terapia</strong>
+                  <p>{reasonsInitial}</p>
+                </>
+              )}
+              {reasonsCurrent && (
+                <>
+                  <strong style={{ marginTop: reasonsInitial ? 'var(--space-3)' : undefined }}>Motivos atuais para permanecer em terapia</strong>
+                  <p>{reasonsCurrent}</p>
                 </>
               )}
               {cc.additional_comments && (
                 <>
-                  <strong style={{ marginTop: cc.motivo_notes ? 'var(--space-3)' : undefined }}>Comentários adicionais</strong>
+                  <strong style={{ marginTop: reasonsInitial || reasonsCurrent ? 'var(--space-3)' : undefined }}>Comentários adicionais</strong>
                   <p>{cc.additional_comments}</p>
                 </>
               )}
